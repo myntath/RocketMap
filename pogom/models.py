@@ -35,7 +35,7 @@ args = get_args()
 flaskDb = FlaskDB()
 cache = TTLCache(maxsize=100, ttl=60 * 5)
 
-db_schema_version = 12
+db_schema_version = 13
 
 
 class MyRetryDB(RetryOperationalError, PooledMySQLDatabase):
@@ -993,6 +993,13 @@ class MainWorker(BaseModel):
     message = TextField(null=True, default="")
     method = CharField(max_length=50)
     last_modified = DateTimeField(index=True)
+    success = IntegerField(default=0)
+    fail = IntegerField(default=0)
+    empty = IntegerField(default=0)
+    skip = IntegerField(default=0)
+    captcha = IntegerField(default=0)
+    start = IntegerField(default=0)
+    elapsed = IntegerField(default=0)
 
 
 class WorkerStatus(BaseModel):
@@ -2302,4 +2309,16 @@ def database_migrate(db, old_ver):
         db.drop_tables([MainWorker])
         migrate(
             migrator.add_column('workerstatus', 'captcha', IntegerField(default=0))
+        )
+
+    if old_ver < 13:
+        db.drop_tables([MainWorker])
+        migrate(
+            migrator.add_column('mainworker', 'success', IntegerField(default=0)),
+            migrator.add_column('mainworker', 'fail', IntegerField(default=0)),
+            migrator.add_column('mainworker', 'empty', IntegerField(default=0)),
+            migrator.add_column('mainworker', 'skip', IntegerField(default=0)),
+            migrator.add_column('mainworker', 'captcha', IntegerField(default=0)),
+            migrator.add_column('mainworker', 'start', IntegerField(default=0)),
+            migrator.add_column('mainworker', 'elapsed', IntegerField(default=0))
         )

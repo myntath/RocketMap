@@ -6,6 +6,24 @@ var rawDataIsLoading = false
 var statusPagePassword = false
 var groupByWorker = true
 
+var active
+var success
+var failed
+var empty
+var skipped
+var captcha
+var starttime
+var elapsed_total
+var elapsed_s
+var elapsed_h
+var sph
+var fph
+var eph
+var skph
+var cph
+var ccost
+var cmonth
+
 /**
  * Calculate a 32 bit FNV-1a hash
  * Found here: https://gist.github.com/vaiorabbit/5657561
@@ -93,6 +111,19 @@ function addTable (hash) {
   table.find('.status_row.header .status_cell').click(tableSort)
 }
 
+function addStats (hash) {
+  var worker = `
+    <div id="worker_${hash} class="worker">
+      <br>
+      <b>
+      <span id="name_${hash}" class="name"></span>
+      </b>
+      <br><BR>
+    </div>
+  `
+  $(worker).appendTo('#status_container')
+}
+
 function addMainWorker (hash) {
   var worker = `
     <div id="worker_${hash}" class="worker">
@@ -172,7 +203,61 @@ function processWorker (i, worker) {
   $('#message_' + hash).html(worker['message'])
 }
 
+function getstats (i, worker) {
+  success += worker['success']
+  failed  += worker['fail']
+  empty   += worker['empty']
+  skipped += worker['skip']
+  captcha += worker['captcha']
+  
+  elapsed_total += worker['elapsed']
+  elapsed_s = elapsed_total / (i + 1)
+  elapsed_h = elapsed_s / 3600
+}
+
+function getactive (i, worker) {
+  active  += 1
+}
+
+function add_total_stats (result) {
+  var statshash = hashFnv32a('statsABC987', true)
+  var statmsg
+  
+  active = 0
+  success = 0
+  failed = 0
+  empty = 0
+  skipped = 0
+  captcha = 0
+  elapsed_total = 0
+  elapsed_s = 0
+  elapsed_h = 0
+  sph = 0
+  fph = 0
+  eph = 0
+  skph = 0
+  cph = 0
+  ccost = 0
+  cmonth = 0
+
+  $.each(result.main_workers, getstats)      
+  $.each(result.workers, getactive)
+
+  sph = (success * 3600 / elapsed_s) || 0
+  fph = (failed * 3600 / elapsed_s) || 0
+  eph = (empty * 3600 / elapsed_s) || 0
+  skph = (skipped * 3600 / elapsed_s) || 0
+  cph = (captcha * 3600 / elapsed_s) || 0
+  ccost = cph * 0.00299
+  cmonth = ccost * 730
+
+  statmsg = 'Total active: ' + active + ' | Success: ' + success.toFixed() + ' (' + sph.toFixed() + '/hr) | Fails: ' + failed.toFixed() + ' (' + fph.toFixed() + '/hr) | Empties: ' + empty.toFixed() + ' (' + eph.toFixed() + '/hr) | Skips: ' + skipped.toFixed() + ' (' + skph.toFixed() + '/hr) | Captchas: ' + captcha.toFixed() + ' (' + cph.toFixed() + '/hr) ($' + ccost.toFixed(2) + '/hr, $' + cmonth.toFixed(2) + '/mo) | Elapsed:  ' + elapsed_h.toFixed(1) + 'h (' + elapsed_s.toFixed(0) + 's)'
+  $('#name_' + statshash).html(statmsg)
+}
+
 function parseResult (result) {
+
+  add_total_stats(result)
   if (groupByWorker) {
     $.each(result.main_workers, processMainWorker)
   }
@@ -195,6 +280,7 @@ $('#password_form').submit(function (event) {
   loadRawData().done(function (result) {
     if (result.login === 'ok') {
       $('.status_form').remove()
+      addStats(hashFnv32a('statsABC987', true))
       window.setInterval(updateStatus, 5000)
       parseResult(result)
     } else {

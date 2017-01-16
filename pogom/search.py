@@ -266,6 +266,13 @@ def worker_status_db_thread(threads_status, name, db_updates_queue):
                     'worker_name': name,
                     'message': status['message'],
                     'method': status['scheduler'],
+                    'success': status['success_total'],
+                    'fail': status['fail_total'],
+                    'empty': status['empty_total'],
+                    'skip': status['skip_total'],
+                    'captcha': status['captcha_total'],
+                    'start': status['starttime'],
+                    'elapsed': status['elapsed'],
                     'last_modified': datetime.utcnow()
                 }
             elif status['type'] == 'Worker':
@@ -310,6 +317,7 @@ def search_overseer_thread(args, new_location_queue, pause_bit, heartb, db_updat
         'success_total': 0,
         'fail_total': 0,
         'empty_total': 0,
+        'elapsed': 0,
         'scheduler': args.scheduler
     }
 
@@ -465,6 +473,7 @@ def get_stats_message(threadStatus):
     if elapsed == 0:
         elapsed = 1  # Just to prevent division by 0 errors, set elapsed to 1 millisecond
 
+    overseer['elapsed'] = elapsed
     sph = overseer['success_total'] * 3600 / elapsed
     fph = overseer['fail_total'] * 3600 / elapsed
     eph = overseer['empty_total'] * 3600 / elapsed
@@ -475,8 +484,8 @@ def get_stats_message(threadStatus):
 
     message = ('Total active: {}  |  Success: {} ({}/hr) | ' +
                'Fails: {} ({}/hr) | Empties: {} ({}/hr) | ' +
-               'Skips {} ({}/hr) | ' +
-               'Captchas: {} ({}/hr)|${:2}/hr|${:2}/mo').format(
+               'Skips: {} ({}/hr) | ' +
+               'Captchas: {} ({}/hr) (${:2}/hr, ${:2}/mo)').format(
                    overseer['active_accounts'],
                    overseer['success_total'], sph,
                    overseer['fail_total'], fph,
