@@ -12,10 +12,9 @@ var failed
 var empty
 var skipped
 var captcha
-var starttime
-var elapsed_total
-var elapsed_s
-var elapsed_h
+var elapsedTotal
+var elapsedSecs
+var elapsedHours
 var sph
 var fph
 var eph
@@ -205,33 +204,33 @@ function processWorker (i, worker) {
 
 function getstats (i, worker) {
   success += worker['success']
-  failed  += worker['fail']
-  empty   += worker['empty']
+  failed += worker['fail']
+  empty += worker['empty']
   skipped += worker['skip']
   captcha += worker['captcha']
-  
-  elapsed_total += worker['elapsed']
-  elapsed_s = elapsed_total / (i + 1)
-  elapsed_h = elapsed_s / 3600
+
+  elapsedTotal += worker['elapsed']
+  elapsedSecs = elapsedTotal / (i + 1)
+  elapsedHours = elapsedSecs / 3600
 }
 
 function getactive (i, worker) {
-  active  += 1
+  active += 1
 }
 
-function add_total_stats (result) {
+function addTotalStats (result) {
   var statshash = hashFnv32a('statsABC987', true)
   var statmsg
-  
+
   active = 0
   success = 0
   failed = 0
   empty = 0
   skipped = 0
   captcha = 0
-  elapsed_total = 0
-  elapsed_s = 0
-  elapsed_h = 0
+  elapsedTotal = 0
+  elapsedSecs = 0
+  elapsedHours = 0
   sph = 0
   fph = 0
   eph = 0
@@ -240,24 +239,23 @@ function add_total_stats (result) {
   ccost = 0
   cmonth = 0
 
-  $.each(result.main_workers, getstats)      
+  $.each(result.main_workers, getstats)
   $.each(result.workers, getactive)
 
-  sph = (success * 3600 / elapsed_s) || 0
-  fph = (failed * 3600 / elapsed_s) || 0
-  eph = (empty * 3600 / elapsed_s) || 0
-  skph = (skipped * 3600 / elapsed_s) || 0
-  cph = (captcha * 3600 / elapsed_s) || 0
+  sph = (success * 3600 / elapsedSecs) || 0
+  fph = (failed * 3600 / elapsedSecs) || 0
+  eph = (empty * 3600 / elapsedSecs) || 0
+  skph = (skipped * 3600 / elapsedSecs) || 0
+  cph = (captcha * 3600 / elapsedSecs) || 0
   ccost = cph * 0.00299
   cmonth = ccost * 730
 
-  statmsg = 'Total active: ' + active + ' | Success: ' + success.toFixed() + ' (' + sph.toFixed() + '/hr) | Fails: ' + failed.toFixed() + ' (' + fph.toFixed() + '/hr) | Empties: ' + empty.toFixed() + ' (' + eph.toFixed() + '/hr) | Skips: ' + skipped.toFixed() + ' (' + skph.toFixed() + '/hr) | Captchas: ' + captcha.toFixed() + ' (' + cph.toFixed() + '/hr) ($' + ccost.toFixed(2) + '/hr, $' + cmonth.toFixed(2) + '/mo) | Elapsed:  ' + elapsed_h.toFixed(1) + 'h (' + elapsed_s.toFixed(0) + 's)'
+  statmsg = 'Total active: ' + active + ' | Success: ' + success.toFixed() + ' (' + sph.toFixed() + '/hr) | Fails: ' + failed.toFixed() + ' (' + fph.toFixed() + '/hr) | Empties: ' + empty.toFixed() + ' (' + eph.toFixed() + '/hr) | Skips: ' + skipped.toFixed() + ' (' + skph.toFixed() + '/hr) | Captchas: ' + captcha.toFixed() + ' (' + cph.toFixed() + '/hr) ($' + ccost.toFixed(2) + '/hr, $' + cmonth.toFixed(2) + '/mo) | Elapsed:  ' + elapsedHours.toFixed(1) + 'h (' + elapsedSecs.toFixed(0) + 's)'
   $('#name_' + statshash).html(statmsg)
 }
 
 function parseResult (result) {
-
-  add_total_stats(result)
+  addTotalStats(result)
   if (groupByWorker) {
     $.each(result.main_workers, processMainWorker)
   }
