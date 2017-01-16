@@ -219,7 +219,7 @@ function getactive (i, worker) {
 }
 
 function addTotalStats (result) {
-  var statshash = hashFnv32a('statsABC987', true)
+  var statshash = hashFnv32a('statsABC987', true)  /* unique hash for stats worker */
   var statmsg
 
   active = 0
@@ -278,7 +278,7 @@ $('#password_form').submit(function (event) {
   loadRawData().done(function (result) {
     if (result.login === 'ok') {
       $('.status_form').remove()
-      addStats(hashFnv32a('statsABC987', true))
+      addStats(hashFnv32a('statsABC987', true))    /* unique hash for stats worker */
       window.setInterval(updateStatus, 5000)
       parseResult(result)
     } else {
