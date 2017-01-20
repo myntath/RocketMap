@@ -5,7 +5,7 @@ var monthArray = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep',
 var rawDataIsLoading = false
 var statusPagePassword = false
 var groupByWorker = true
-
+var statshash = "a5e8e28e"  /* unique worker hash for statistics: hashFnv32a('statsABC987)*/
 var active
 var success
 var failed
@@ -112,14 +112,13 @@ function addTable (hash) {
 
 function addStats (hash) {
   var worker = `
-    <div id="worker_${hash} class="worker">
-      <br>
-      <b>
+    <div id="worker_${hash}" class="worker">
       <span id="name_${hash}" class="name"></span>
-      </b>
-      <br><BR>
+      <span id="method_${hash}" class="method"></span>
+      <span id="message_${hash}" class="message"></span>
     </div>
   `
+
   $(worker).appendTo('#status_container')
 }
 
@@ -219,7 +218,6 @@ function getactive (i, worker) {
 }
 
 function addTotalStats (result) {
-  var statshash = hashFnv32a('statsABC987', true)  /* unique hash for stats worker */
   var statmsg
 
   active = 0
@@ -250,11 +248,16 @@ function addTotalStats (result) {
   ccost = cph * 0.00299
   cmonth = ccost * 730
 
-  statmsg = 'Total active: ' + active + ' | Success: ' + success.toFixed() + ' (' + sph.toFixed() + '/hr) | Fails: ' + failed.toFixed() + ' (' + fph.toFixed() + '/hr) | Empties: ' + empty.toFixed() + ' (' + eph.toFixed() + '/hr) | Skips: ' + skipped.toFixed() + ' (' + skph.toFixed() + '/hr) | Captchas: ' + captcha.toFixed() + ' (' + cph.toFixed() + '/hr) ($' + ccost.toFixed(2) + '/hr, $' + cmonth.toFixed(2) + '/mo) | Elapsed:  ' + elapsedHours.toFixed(1) + 'h (' + elapsedSecs.toFixed(0) + 's)'
-  $('#name_' + statshash).html(statmsg)
+  statmsg = 'Total active: ' + active + ' | Success: ' + success.toFixed() + ' (' + sph.toFixed() + '/hr) | Fails: ' + failed.toFixed() + ' (' + fph.toFixed() + '/hr) | Empties: ' + empty.toFixed() + ' (' + eph.toFixed() + '/hr) | Skips: ' + skipped.toFixed() + ' (' + skph.toFixed() + '/hr) | Captchas: ' + captcha.toFixed() + ' (' + cph.toFixed() + '/hr) ($' + ccost.toFixed(2) + '/hr, $' + cmonth.toFixed(2) + '/mo) | Elapsed:  ' + elapsedHours.toFixed(1) + 'h (' + elapsedSecs.toFixed(0) + 's)<hr />'
+  $('#name_' + statshash).html('All Instances')
+  $('#method_' + statshash).html('(Total Statistics)')
+  $('#message_' + statshash).html(statmsg)
 }
 
 function parseResult (result) {
+  if ($('#worker_' + statshash).length === 0) {
+    addStats(statshash)
+  }
   addTotalStats(result)
   if (groupByWorker) {
     $.each(result.main_workers, processMainWorker)
@@ -278,7 +281,6 @@ $('#password_form').submit(function (event) {
   loadRawData().done(function (result) {
     if (result.login === 'ok') {
       $('.status_form').remove()
-      addStats(hashFnv32a('statsABC987', true))    /* unique hash for stats worker */
       window.setInterval(updateStatus, 5000)
       parseResult(result)
     } else {
