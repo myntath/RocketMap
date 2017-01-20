@@ -5,7 +5,7 @@ var monthArray = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep',
 var rawDataIsLoading = false
 var statusPagePassword = false
 var groupByWorker = true
-var statshash = "a5e8e28e"  /* unique worker hash for statistics: hashFnv32a('statsABC987)*/
+var statshash = 'a5e8e28e'  /* unique worker hash for statistics: hashFnv32a('statsABC987)*/
 var active
 var success
 var failed
