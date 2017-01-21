@@ -112,7 +112,7 @@ function processWorker(i, worker) {
 
 function parseResult(result) {
     if ($('#worker_' + statshash).length === 0) {
-        addStats(statshash)
+        addStatsWorker(statshash)
     }
     addTotalStats(result)
     if (groupByWorker) {
@@ -207,7 +207,7 @@ function updateStatus() {
 /*
  * Generate Statistics Across All Workers
  */
-function addStatsWorker (hash) {
+function addStatsWorker(hash) {
     var worker = `
     <div id="worker_${hash}" class="worker">
     <span id="name_${hash}" class="name"></span>
@@ -219,7 +219,7 @@ function addStatsWorker (hash) {
     $(worker).appendTo('#status_container')
 }
 
-function getStats (i, worker) {
+function getStats(i, worker) {
     success += worker['success']
     failed += worker['fail']
     empty += worker['empty']
@@ -231,11 +231,11 @@ function getStats (i, worker) {
     elapsedHours = elapsedSecs / 3600
 }
 
-function getActive (i, worker) {
+function getActive(i, worker) {
     active += 1
 }
 
-function addTotalStats (result) {
+function addTotalStats(result) {
     var statmsg
 
     active = 0
