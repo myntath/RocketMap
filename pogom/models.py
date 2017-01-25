@@ -2362,11 +2362,18 @@ def database_migrate(db, old_ver):
     if old_ver < 13:
         db.drop_tables([MainWorker])
         migrate(
-            migrator.add_column('mainworker', 'success', IntegerField(default=0)),
-            migrator.add_column('mainworker', 'fail', IntegerField(default=0)),
-            migrator.add_column('mainworker', 'empty', IntegerField(default=0)),
-            migrator.add_column('mainworker', 'skip', IntegerField(default=0)),
-            migrator.add_column('mainworker', 'captcha', IntegerField(default=0)),
-            migrator.add_column('mainworker', 'start', IntegerField(default=0)),
-            migrator.add_column('mainworker', 'elapsed', IntegerField(default=0))
+            migrator.add_column('mainworker', 'success',
+                                IntegerField(default=0)),
+            migrator.add_column('mainworker', 'fail',
+                                IntegerField(default=0)),
+            migrator.add_column('mainworker', 'empty',
+                                IntegerField(default=0)),
+            migrator.add_column('mainworker', 'skip',
+                                IntegerField(default=0)),
+            migrator.add_column('mainworker', 'captcha',
+                                IntegerField(default=0)),
+            migrator.add_column('mainworker', 'start',
+                                IntegerField(default=0)),
+            migrator.add_column('mainworker', 'elapsed',
+                                IntegerField(default=0))
         )
