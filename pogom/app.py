@@ -22,7 +22,6 @@ from .utils import now, dottedQuadToNum, get_blacklist
 log = logging.getLogger(__name__)
 compress = Compress()
 
-
 class Pogom(Flask):
 
     def __init__(self, import_name, **kwargs):

@@ -41,7 +41,7 @@ def check_login(args, account, api, position, proxy_url):
                     username=account['username'],
                     password=account['password'])
             break
-        except AuthException:
+        except Exception:
             if i >= args.login_retries:
                 raise TooManyLoginAttempts('Exceeded login attempts.')
             else:
