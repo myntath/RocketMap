@@ -41,7 +41,8 @@ from pgoapi.exceptions import AuthException
 
 from .models import parse_map, GymDetails, parse_gyms, MainWorker, WorkerStatus
 from .fakePogoApi import FakePogoApi
-from .utils import now, get_tutorial_state, complete_tutorial
+from .utils import (now, get_tutorial_state, complete_tutorial,
+                    generate_device_info)
 from .transform import get_new_coords
 import schedulers
 
@@ -491,7 +492,8 @@ def search_overseer_thread(args, new_location_queue, pause_bit, heartb,
                     scheduler_array[i].schedule()
                 except Exception as e:
                     log.error(
-                        'Schedule creation had an Exception: {}.'.format(e))
+                        'Schedule creation had an Exception: {}.'.format(
+                            repr(e)))
                     traceback.print_exc(file=sys.stdout)
                     time.sleep(10)
             else:
@@ -550,25 +552,26 @@ def get_stats_message(threadStatus):
         elapsed = 1
 
     overseer['elapsed'] = elapsed
-    sph = overseer['success_total'] * 3600 / elapsed
-    fph = overseer['fail_total'] * 3600 / elapsed
-    eph = overseer['empty_total'] * 3600 / elapsed
-    skph = overseer['skip_total'] * 3600 / elapsed
-    cph = overseer['captcha_total'] * 3600 / elapsed
+    sph = overseer['success_total'] * 3600.0 / elapsed
+    fph = overseer['fail_total'] * 3600.0 / elapsed
+    eph = overseer['empty_total'] * 3600.0 / elapsed
+    skph = overseer['skip_total'] * 3600.0 / elapsed
+    cph = overseer['captcha_total'] * 3600.0 / elapsed
     ccost = cph * 0.00299
     cmonth = ccost * 730
 
-    message = ('Total active: {}  |  Success: {} ({}/hr) | ' +
-               'Fails: {} ({}/hr) | Empties: {} ({}/hr) | ' +
-               'Skips: {} ({}/hr) | ' +
-               'Captchas: {} ({}/hr) (${:2}/hr, ${:2}/mo)').format(
+    message = ('Total active: {}  |  Success: {} ({:.1f}/hr) | ' +
+               'Fails: {} ({:.1f}/hr) | Empties: {} ({:.1f}/hr) | ' +
+               'Skips {} ({:.1f}/hr) | ' +
+               'Captchas: {} ({:.1f}/hr) (${:.5f}/hr, ${:.3f}/mo) | ' +
+               'Elapsed: {:.1f}h ({}s)').format(
                    overseer['active_accounts'],
                    overseer['success_total'], sph,
                    overseer['fail_total'], fph,
                    overseer['empty_total'], eph,
                    overseer['skip_total'], skph,
                    overseer['captcha_total'], cph,
-                   ccost, cmonth)
+                   ccost, cmonth, elapsed / 3600.0, elapsed)
 
     return message
 
@@ -719,7 +722,8 @@ def search_worker_thread(args, account_queue, account_failures,
             if args.mock != '':
                 api = FakePogoApi(args.mock)
             else:
-                api = PGoApi()
+                device_info = generate_device_info()
+                api = PGoApi(device_info=device_info)
 
             # New account - new proxy.
             if args.proxy:
@@ -992,8 +996,8 @@ def search_worker_thread(args, account_queue, account_failures,
                     consecutive_fails = 0
                     status['message'] = ('Search at {:6f},{:6f} completed ' +
                                          'with {} finds.').format(
-                                            step_location[0], step_location[1],
-                                            parsed['count'])
+                        step_location[0], step_location[1],
+                        parsed['count'])
                     log.debug(status['message'])
                 except Exception as e:
                     parsed = False
@@ -1007,7 +1011,7 @@ def search_worker_thread(args, account_queue, account_failures,
                                                            step_location[1],
                                                            account['username'])
                     log.exception('{}. Exception message: {}'.format(
-                        status['message'], e))
+                        status['message'], repr(e)))
 
                 # Get detailed information about gyms.
                 if args.gym_info and parsed:
@@ -1102,9 +1106,9 @@ def search_worker_thread(args, account_queue, account_failures,
 
         # Catch any process exceptions, log them, and continue the thread.
         except Exception as e:
-            log.error(
+            log.error((
                 'Exception in search_worker under account {} Exception ' +
-                'message: {}.'.format(account['username'], e))
+                'message: {}.').format(account['username'], repr(e)))
             status['message'] = (
                 'Exception in search_worker using account {}. Restarting ' +
                 'with fresh account. See logs for details.').format(
@@ -1188,7 +1192,7 @@ def map_request(api, position, no_jitter=False):
         return response
 
     except Exception as e:
-        log.warning('Exception while downloading map: %s', e)
+        log.warning('Exception while downloading map: %s', repr(e))
         return False
 
 
@@ -1214,7 +1218,7 @@ def gym_request(api, position, gym):
         return x
 
     except Exception as e:
-        log.warning('Exception while downloading gym details: %s', e)
+        log.warning('Exception while downloading gym details: %s', repr(e))
         return False
 
 
