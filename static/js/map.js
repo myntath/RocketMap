@@ -83,7 +83,7 @@ var notifyNoIvTitle = '<pkm>'
   <dist>  - disappear time
   <udist> - time until disappear
 */
-var notifyText = 'disappear at <dist> (<udist>)'
+var notifyText = 'disappears at <dist> (<udist>)'
 
 //
 // Functions
@@ -1795,7 +1795,7 @@ function showGymDetails(id) { // eslint-disable-line no-unused-vars
                                 <div class="iv" style="width: 36px;"">
                                     <div class="type">PERFECT</div>
                                     <div class="value">
-                                        ${perfectPercent}<span style="font-size: .6em;">%</span>
+                                        ${perfectPercent.toFixed(0)}<span style="font-size: .6em;">%</span>
                                     </div>
                                 </div>
                             </div>
