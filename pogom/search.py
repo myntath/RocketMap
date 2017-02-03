@@ -329,14 +329,14 @@ def worker_status_db_thread(threads_status, name, db_updates_queue):
                     'last_modified': datetime.utcnow(),
                     'accounts_working': status['active_accounts'],
                     'accounts_captcha': status['accounts_captcha'],
-                    'accounts_failed': status['accounts_failed']
+                    'accounts_failed': status['accounts_failed'],
                     'success': status['success_total'],
                     'fail': status['fail_total'],
                     'empty': status['empty_total'],
                     'skip': status['skip_total'],
                     'captcha': status['captcha_total'],
                     'start': status['starttime'],
-                    'elapsed': status['elapsed'],
+                    'elapsed': status['elapsed']
                 }
             elif status['type'] == 'Worker':
                 workers[status['username']] = WorkerStatus.db_format(
