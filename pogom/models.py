@@ -2475,27 +2475,7 @@ def database_migrate(db, old_ver):
 
         db.drop_tables([ScanSpawnPoint])
 
-    if old_ver < 13:
+    if old_ver < 13 or old_ver < 14:
 
         db.drop_tables([WorkerStatus])
         db.drop_tables([MainWorker])
-
-    if old_ver < 14:
-        migrate(
-            migrator.add_column('workerstatus', 'captcha',
-                                IntegerField(default=0)),
-            migrator.add_column('mainworker', 'success',
-                                IntegerField(default=0)),
-            migrator.add_column('mainworker', 'fail',
-                                IntegerField(default=0)),
-            migrator.add_column('mainworker', 'empty',
-                                IntegerField(default=0)),
-            migrator.add_column('mainworker', 'skip',
-                                IntegerField(default=0)),
-            migrator.add_column('mainworker', 'captcha',
-                                IntegerField(default=0)),
-            migrator.add_column('mainworker', 'start',
-                                IntegerField(default=0)),
-            migrator.add_column('mainworker', 'elapsed',
-                                IntegerField(default=0))
-        )
