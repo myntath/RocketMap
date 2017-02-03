@@ -2479,13 +2479,11 @@ def database_migrate(db, old_ver):
 
         db.drop_tables([WorkerStatus])
         db.drop_tables([MainWorker])
-        migrate(
-            migrator.add_column('workerstatus', 'captcha',
-                                IntegerField(default=0))
-        )
 
     if old_ver < 14:
         migrate(
+            migrator.add_column('workerstatus', 'captcha',
+                                IntegerField(default=0))
             migrator.add_column('mainworker', 'success',
                                 IntegerField(default=0)),
             migrator.add_column('mainworker', 'fail',
