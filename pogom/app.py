@@ -537,7 +537,7 @@ class Pogom(Flask):
         valid_input["sort"] = {"display": "Sort", "items": valid_sort}
         valid_input["order"] = {"display": "Order", "items": valid_order}
         return valid_input
-
+ 
     @requires_auth
     def get_stats(self):
         return render_template('statistics.html',
