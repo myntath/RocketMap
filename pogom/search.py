@@ -487,7 +487,12 @@ def search_overseer_thread(args, new_location_queue, pause_bit, heartb,
 
         scanningTime = getScanTime()
         # Wait here while scanning is paused.
+        setPauseOnce = True
         while pause_bit.is_set() or (scanningTime < datetime.now() and args.status_name == "Main" and account_queue.qsize < 100):
+            if setPauseOnce:
+                setPauseOnce = False
+                writePause(1) #write true paused
+                
             for i in range(0, len(scheduler_array)):
                 scheduler_array[i].scanning_paused()
             scanningTime = getScanTime()
@@ -497,7 +502,8 @@ def search_overseer_thread(args, new_location_queue, pause_bit, heartb,
             threadStatus['Overseer']['account_reserve'] = account_queue.qsize()
             log.info('Paused')
             time.sleep(5)
-
+        if not setPauseOnce:
+            writePause(0) #write not paused
         # If a new location has been passed to us, get the most recent one.
         if not new_location_queue.empty():
             log.info('New location caught, moving search grid.')
@@ -1242,3 +1248,16 @@ def getScanTime():
     con.close()
     cur.close()
     return timeToScan
+
+def writePause(state):
+    
+    try:
+        con
+    except NameError:
+        con = mdb.connect('localhost', 'powermondbuser', 'lRac[0432', 'mynt')
+    with con:
+        cur = con.cursor()
+        cur.execute("INSERT INTO paused (number, time, state) VALUES (NULL, NOW(), {})".format(state))
+    con.close()
+    cur.close()
+    return
