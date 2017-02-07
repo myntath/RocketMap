@@ -31,7 +31,8 @@ from .utils import now
 
 
 log = logging.getLogger(__name__)
-
+flog = logging.getLogger('flog')
+clog = logging.getLogger('clog')
 
 def captcha_overseer_thread(args, account_queue, account_captchas,
                             key_scheduler, wh_queue):
@@ -188,6 +189,7 @@ def handle_captcha(args, status, api, account, account_failures,
                                      'Putting account away.').format(
                                         account['username'])
                 log.warning(status['message'])
+                flog.error(account['username'] + ':captcha')
                 account_failures.append({
                     'account': account,
                     'last_fail_time': now(),
@@ -207,6 +209,7 @@ def handle_captcha(args, status, api, account, account_failures,
                                            account, whq):
                     return True
                 else:
+                    flog.error(account['username'] + ':captchafailed')
                     account_failures.append({
                        'account': account,
                        'last_fail_time': now(),
@@ -219,6 +222,7 @@ def handle_captcha(args, status, api, account, account_failures,
                 log.warning(status['message'])
                 account['last_active'] = datetime.utcnow()
                 account['last_location'] = step_location
+                clog.error(account['username'] + ':captcha1')
                 account_captchas.append((status, account, captcha_url))
                 if args.webhooks:
                     wh_message = {'status_name': args.status_name,
