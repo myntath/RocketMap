@@ -452,6 +452,11 @@ def search_overseer_thread(args, new_location_queue, pause_bit, heartb,
             'noitems': 0,
             'skip': 0,
             'captcha': 0,
+            'hash_key': 0,
+            'maximum_rpm': 0,
+            'rpm_left': 0,
+            'peak_key': 0,
+            'expires': 0,
             'username': '',
             'proxy_display': proxy_display,
             'proxy_url': proxy_url,
@@ -750,6 +755,11 @@ def search_worker_thread(args, account_queue, account_failures,
             status['noitems'] = 0
             status['skip'] = 0
             status['captcha'] = 0
+            status['hash_key'] = 0
+            status['maximum_rpm'] = 0
+            status['rpm_left'] = 0
+            status['peak_key'] = 0
+            status['expires'] = 0
 
             stagger_thread(args)
 
@@ -980,12 +990,51 @@ def search_worker_thread(args, account_queue, account_failures,
                         time.sleep(3)
                         break
 
+                    if args.hash_key:
+                        key_instance = (
+                            key_scheduler.keys[key])
+                        key_instance['remaining'] = HashServer.status.get(
+                            'remaining', 0)
+
+                        if key_instance['maximum'] == 0:
+                            key_instance['maximum'] = HashServer.status.get(
+                                'maximum', 0)
+
+                        peak = (
+                            key_instance['maximum'] -
+                            key_instance['remaining'])
+
+                        if key_instance['peak'] < peak:
+                            key_instance['peak'] = peak
+
+                        if key_instance['expires'] == 'N/A':
+                            expires = HashServer.status.get(
+                                'expiration', 'N/A')
+
+                            if expires != 'N/A':
+                                expires = datetime.utcfromtimestamp(
+                                    int(expires))
+
+                                from_zone = tz.tzutc()
+                                to_zone = tz.tzlocal()
+
+                                expires = expires.replace(tzinfo=from_zone)
+                                expires = expires.astimezone(to_zone)
+                                expires = expires.strftime(
+                                    '%Y-%m-%d %H:%M:%S')
+
+                            key_instance['expires'] = expires
+
                     parsed = parse_map(args, response_dict, step_location,
                                        dbq, whq, api, scan_date)
                     scheduler.task_done(status, parsed)
                     if parsed['count'] > 0:
                         status['success'] += 1
                         consecutive_noitems = 0
+                    # Check if Hash Key is used and set Values
+                        if (key_scheduler):
+                            status['hash_key'] = key
+                            status['maximum_rpm'] = key_instance['maximum']
                     else:
                         status['noitems'] += 1
                         consecutive_noitems += 1
@@ -995,6 +1044,16 @@ def search_worker_thread(args, account_queue, account_failures,
                         step_location[0], step_location[1],
                         parsed['count'])
                     log.debug(status['message'])
+                    status['rpm_left'] = key_instance['remaining']
+                    status['peak_key'] = key_instance['peak']
+                    status['expires'] = key_instance['expires']
+                    log.info(
+                            ('Hash Key {} has {}/{} RPM ' +
+                             'left.').format(key,
+                                             key_instance[
+                                                 'remaining'],
+                                             key_instance[
+                                                 'maximum']))
                 except Exception as e:
                     parsed = False
                     status['fail'] += 1
@@ -1089,20 +1148,6 @@ def search_worker_thread(args, account_queue, account_failures,
                         if gym_responses:
                             parse_gyms(args, gym_responses,
                                        whq, dbq)
-
-                if args.hash_key:
-                    key_instance = key_scheduler.keys[key_scheduler.current()]
-                    key_instance['remaining'] = HashServer.status.get(
-                        'remaining', 0)
-
-                    if key_instance['maximum'] == 0:
-                        key_instance['maximum'] = HashServer.status.get(
-                            'maximum', 0)
-
-                    peak = key_instance['maximum'] - key_instance['remaining']
-
-                    if key_instance['peak'] < peak:
-                        key_instance['peak'] = peak
 
                 # Delay the desired amount after "scan" completion.
                 delay = scheduler.delay(status['last_scan_date'])

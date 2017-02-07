@@ -10,7 +10,6 @@ var groupByWorker = true
 var minUpdateDelay = 1000 // Minimum delay between updates (in ms).
 var lastRawUpdateTime = new Date()
 
-
 /*
  * Workers
  */
@@ -25,6 +24,7 @@ function addMainWorker(hash) {
 
     $(worker).appendTo('#status_container')
     addTable(hash)
+    addhash(hash)
 }
 
 function processMainWorker(i, worker) {
@@ -33,6 +33,7 @@ function processMainWorker(i, worker) {
     if ($('#worker_' + hash).length === 0) {
         addMainWorker(hash)
     }
+
 
     $('#name_' + hash).html(worker['worker_name'])
     $('#method_' + hash).html('(' + worker['method'] + ')')
@@ -52,8 +53,20 @@ function addWorker(mainWorkerHash, workerHash) {
        <div id="message_${workerHash}"  class="status_cell"/>
      </div>
    `
-
     $(row).appendTo('#table_' + mainWorkerHash)
+}
+
+function addhashtable(mainWorkerHash, workerHash) {
+    var hashrow = `
+    <div id="hashrow_${workerHash}" class="status_row">
+      <div id="hash_key_${workerHash}" class="status_cell"/>
+      <div id="maximum_rpm_${workerHash}" class="status_cell"/>
+      <div id="rpm_left_${workerHash}" class="status_cell"/>
+      <div id="peak_key_${workerHash}" class="status_cell"/>
+      <div id="expires_${workerHash}" class="status_cell"/>
+    </div>
+    `
+    $(hashrow).appendTo('#hashtable_' + mainWorkerHash)
 }
 
 function processWorker(i, worker) {
@@ -61,7 +74,8 @@ function processWorker(i, worker) {
     var mainWorkerHash
     if (groupByWorker) {
         mainWorkerHash = hashFnv32a(worker['worker_name'], true)
-        if ($('#table_' + mainWorkerHash).length === 0) {
+        if ($('#table_' + mainWorkerHash).length === 0 &&
+            ($('#hashtable_' + mainWorkerHash).length === 0)) {
             return
         }
     } else {
@@ -69,10 +83,18 @@ function processWorker(i, worker) {
         if ($('#table_global').length === 0) {
             addTable('global')
         }
+
+        if ($('#hashtable_global').length === 0) {
+            addhash('global')
+        }
     }
 
     if ($('#row_' + hash).length === 0) {
         addWorker(mainWorkerHash, hash)
+    }
+
+    if ($('#hashrow_' + hash).length === 0) {
+        addhashtable(mainWorkerHash, hash)
     }
 
     var lastModified = new Date(worker['last_modified'])
@@ -91,6 +113,11 @@ function processWorker(i, worker) {
     $('#captchas_' + hash).html(worker['captcha'])
     $('#lastmod_' + hash).html(lastModified)
     $('#message_' + hash).html(worker['message'])
+    $('#hash_key_' + hash).html(worker['hash_key'])
+    $('#maximum_rpm_' + hash).html(worker['maximum_rpm'])
+    $('#rpm_left_' + hash).html(worker['rpm_left'])
+    $('#peak_key_' + hash).html(worker['peak_key'])
+    $('#expires_' + hash).html(worker['expires'])
 }
 
 function parseResult(result) {
@@ -100,10 +127,51 @@ function parseResult(result) {
     $.each(result.workers, processWorker)
 }
 
-
 /*
  * Tables
  */
+function addhash(hash) {
+    var hashtable = `
+    <div class="status_table" id="hashtable_${hash}">
+     <div class="status_row header">
+     <div class="status_cell">
+       Hash Keys
+      </div>
+      <div class="status_cell">
+        Maximum RPM
+      </div>
+      <div class="status_cell">
+        RPM Left
+        </div>
+      <div class="status_cell">
+        Peak
+        </div>
+       <div class="status_cell">
+         Expires at
+       </div>
+     </div>
+   </div>`
+
+    $('#status_container').prepend(hashtable)
+    $(hashtable).find('.status_row.header .status_cell').click(hashtableSort)
+}
+
+function hashtableSort() {
+    var hashtable = $(this).parents('.status_table').eq(0)
+    var hashrow = hashtable.find('.status_row:gt(0)').toArray().sort(comparehash($(this).index()))
+    this.asc = !this.asc
+    if (!this.asc) {
+        hashrow = hashrow.reverse()
+    }
+    for (var i = 0; i < hashrow.length; i++) {
+        hashtable.append(hashrow[i])
+    }
+}
+
+function getHashtableValue(hashrow, index) {
+    return $(hashrow).children('.status_cell').eq(index).html()
+}
+
 function addTable(hash) {
     var table = `
      <div class="status_table" id="table_${hash}">
@@ -133,8 +201,7 @@ function addTable(hash) {
            Message
          </div>
        </div>
-     </div>
-   `
+     </div>`
 
     table = $(table)
     table.appendTo('#status_container')
@@ -157,7 +224,6 @@ function getCellValue(row, index) {
     return $(row).children('.status_cell').eq(index).html()
 }
 
-
 /*
  * Helpers
  */
@@ -165,6 +231,13 @@ function compare(index) {
     return function (a, b) {
         var valA = getCellValue(a, index)
         var valB = getCellValue(b, index)
+        return $.isNumeric(valA) && $.isNumeric(valB) ? valA - valB : valA.localeCompare(valB)
+    }
+}
+function comparehash(index) {
+    return function (a, b) {
+        var valA = getHashtableValue(a, index)
+        var valB = getHashtableValue(b, index)
         return $.isNumeric(valA) && $.isNumeric(valB) ? valA - valB : valA.localeCompare(valB)
     }
 }
