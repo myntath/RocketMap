@@ -27,6 +27,7 @@ import time
 import copy
 
 from datetime import datetime
+from dateutil import tz
 from threading import Thread, Lock
 from queue import Queue, Empty
 from sets import Set
@@ -183,7 +184,8 @@ def status_printer(threadStatus, search_items_queue_array, db_updates_queue,
             proxylen = 5
             for item in threadStatus:
                 if threadStatus[item]['type'] == 'Worker':
-                    userlen = max(userlen, len(threadStatus[item]['username']))
+                    userlen = max(userlen, len(
+                        threadStatus[item]['username']))
                     if 'proxy_display' in threadStatus[item]:
                         proxylen = max(proxylen, len(
                             str(threadStatus[item]['proxy_display'])))
@@ -953,7 +955,8 @@ def search_worker_thread(args, account_queue, account_failures,
 
                 # Make the actual request.
                 scan_date = datetime.utcnow()
-                response_dict = map_request(api, step_location, args.no_jitter)
+                response_dict = map_request(
+                    api, step_location, args.no_jitter)
                 status['last_scan_date'] = datetime.utcnow()
 
                 # Record the time and the place that the worker made the
@@ -1011,19 +1014,19 @@ def search_worker_thread(args, account_queue, account_failures,
                             expires = HashServer.status.get(
                                 'expiration', 'N/A')
 
-                            if expires != 'N/A':
-                                expires = datetime.utcfromtimestamp(
-                                    int(expires))
+                        if expires != 'N/A':
+                            expires = datetime.utcfromtimestamp(
+                                int(expires))
 
-                                from_zone = tz.tzutc()
-                                to_zone = tz.tzlocal()
+                            from_zone = tz.tzutc()
+                            to_zone = tz.tzlocal()
 
-                                expires = expires.replace(tzinfo=from_zone)
-                                expires = expires.astimezone(to_zone)
-                                expires = expires.strftime(
-                                    '%Y-%m-%d %H:%M:%S')
+                            expires = expires.replace(tzinfo=from_zone)
+                            expires = expires.astimezone(to_zone)
+                            expires = expires.strftime(
+                                '%Y-%m-%d %H:%M:%S')
 
-                            key_instance['expires'] = expires
+                        key_instance['expires'] = expires
 
                     parsed = parse_map(args, response_dict, step_location,
                                        dbq, whq, api, scan_date)
@@ -1073,7 +1076,8 @@ def search_worker_thread(args, account_queue, account_failures,
                     # Build a list of gyms to update.
                     gyms_to_update = {}
                     for gym in parsed['gyms'].values():
-                        # Can only get gym details within 450m of our position.
+                        # Can only get gym details within 450m of our
+                        # position.
                         distance = calc_distance(
                             step_location, [gym['latitude'], gym['longitude']])
                         if distance < 0.45:
@@ -1135,7 +1139,8 @@ def search_worker_thread(args, account_queue, account_failures,
                                 gym_responses[gym['gym_id']] = response[
                                     'responses']['GET_GYM_DETAILS']
 
-                            # Increment which gym we're on for status messages.
+                            # Increment which gym we're on for status
+                            # messages.
                             current_gym += 1
 
                         status['message'] = (
