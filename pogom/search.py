@@ -53,6 +53,8 @@ import schedulers
 import terminalsize
 
 log = logging.getLogger(__name__)
+clog = logging.getLogger('clog')
+flog = logging.getLogger('flog')
 
 TIMESTAMP = ('\000\000\000\000\000\000\000\000\000\000\000' +
              '\000\000\000\000\000\000\000\000\000\000')
@@ -818,6 +820,7 @@ def search_worker_thread(args, account_queue, account_failures,
                             account['username'],
                             args.max_failures)
                     log.warning(status['message'])
+                    flog.error(account['username'] + ':failures')
                     account_failures.append({'account': account,
                                              'last_fail_time': now(),
                                              'reason': 'failures'})
@@ -835,6 +838,7 @@ def search_worker_thread(args, account_queue, account_failures,
                         'accounts...').format(account['username'],
                                               args.max_empty)
                     log.warning(status['message'])
+                    flog.error(account['username'] + ':empties')
                     account_failures.append({'account': account,
                                              'last_fail_time': now(),
                                              'reason': 'empty scans'})
@@ -865,6 +869,7 @@ def search_worker_thread(args, account_queue, account_failures,
                             'Account {} is being rotated out to rest.'.format(
                                 account['username']))
                         log.info(status['message'])
+                        flog.error(account['username'] + ':rest')
                         account_failures.append({'account': account,
                                                  'last_fail_time': now(),
                                                  'reason': 'rest interval'})
@@ -1131,6 +1136,7 @@ def search_worker_thread(args, account_queue, account_failures,
                 'with fresh account. See logs for details.').format(
                     account['username'])
             traceback.print_exc(file=sys.stdout)
+            flog.error(account['username'] + ':exception')
             account_failures.append({'account': account,
                                      'last_fail_time': now(),
                                      'reason': 'exception'})

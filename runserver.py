@@ -39,6 +39,19 @@ logging.basicConfig(
     '%(message)s')
 log = logging.getLogger()
 
+#my file loggers
+myFormatter = logging.Formatter('%(asctime)s:%(message)s')
+
+flog = logging.getLogger('flog')
+hdlr1 = logging.FileHandler('fails.log')
+hdlr1.setFormatter(myFormatter)
+flog.addHandler(hdlr1)
+
+clog = logging.getLogger('clog')
+hdlr2 = logging.FileHandler('captchas.log')
+hdlr2.setFormatter(myFormatter)
+clog.addHandler(hdlr2)
+
 # Make sure pogom/pgoapi is actually removed if it is an empty directory.
 # This is a leftover directory from the time pgoapi was embedded in
 # PokemonGo-Map.
