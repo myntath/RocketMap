@@ -1339,7 +1339,6 @@ class WorkerStatus(BaseModel):
                          (datetime.utcnow() - timedelta(minutes=5))))
                  .order_by(WorkerStatus.username)
                  .dicts())
-
         status = []
         for s in query:
             status.append(s)
@@ -2039,12 +2038,10 @@ def parse_map(args, map_dict, step_location, db_update_queue, wh_update_queue,
                  .where((Pokemon.disappear_time >= now_date) &
                         (Pokemon.encounter_id << encounter_ids))
                  .dicts())
-
         # Store all encounter_ids and spawnpoint_ids for the Pokemon in query.
         # All of that is needed to make sure it's unique.
         encountered_pokemon = [
             (p['encounter_id'], p['spawnpoint_id']) for p in query]
-
         for p in wild_pokemon:
 
             sp = SpawnPoint.get_by_id(p['spawn_point_id'], p[
@@ -2811,7 +2808,7 @@ def create_tables(db):
     tables = [Pokemon, Pokestop, Gym, ScannedLocation, GymDetails,
               GymMember, GymPokemon, Trainer, MainWorker, WorkerStatus,
               SpawnPoint, ScanSpawnPoint, SpawnpointDetectionData,
-              Token, LocationAltitude, HashKeys, Accounts, BadScans]
+              Token, LocationAltitude, HashKeys, Account, BadScans]
     for table in tables:
         if not table.table_exists():
             log.info('Creating table: %s', table.__name__)
@@ -2827,7 +2824,7 @@ def drop_tables(db):
               GymDetails, GymMember, GymPokemon, Trainer, MainWorker,
               WorkerStatus, SpawnPoint, ScanSpawnPoint,
               SpawnpointDetectionData, LocationAltitude,
-              Token, HashKeys, Accounts, BadScans]
+              Token, HashKeys, Account, BadScans]
     db.connect()
     db.execute_sql('SET FOREIGN_KEY_CHECKS=0;')
     for table in tables:
