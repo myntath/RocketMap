@@ -64,6 +64,7 @@ function addhashtable(mainWorkerHash, workerHash) {
       <div id="rpm_left_${workerHash}" class="status_cell"/>
       <div id="peak_key_${workerHash}" class="status_cell"/>
       <div id="expires_${workerHash}" class="status_cell"/>
+      <div id="lastmod_${workerHash}" class="status_cell"/>
     </div>
     `
     $(hashrow).appendTo('#hashtable_' + mainWorkerHash)
@@ -148,6 +149,9 @@ function addhash(hash) {
         </div>
        <div class="status_cell">
          Expires at
+       </div>
+       <div class="status_cell">
+         Last Modified
        </div>
      </div>
    </div>`
