@@ -433,23 +433,6 @@ class Pokemon(BaseModel):
 
         return filtered
 
-class Account(BaseModel):
-    account_id = IntegerField(primary_key=True)
-    name = CharField(null=False)
-    password = CharField(null=False)
-    login_type = CharField(null=False)
-    total_scans = IntegerField()
-    total_fails = IntegerField()
-    total_empty = IntegerField()
-    total_success = IntegerField()
-    last_cap_1 = IntegerField()
-    last_cap_2 = IntegerField()
-    last_cap_3 = IntegerField()
-    last_cap_4 = IntegerField()
-    last_cap_5 = IntegerField()
-    level = IntegerField()
-    last_active = DateTimeField()
-
 class BadScans(BaseModel):
     name = CharField(null=False)
     scan_type = CharField(null=False)
@@ -549,6 +532,21 @@ class Account(BaseModel):
 
         return raw
 
+    @staticmethod
+    def get_accounts():
+        query = Account.select().dicts()
+        return query
+
+    @staticmethod
+    def get_account_name(name):
+        query = Account.select().where(Account.name == name).dicts()
+        return query
+    
+    @staticmethod
+    def get_account_id(account_id):
+        query = Account.select().where(Account.account_id == account_id).dicts()
+        return query
+    
     @staticmethod
     def update_accounts(db_update_queue, name, fail, empty, captcha, level):
 
