@@ -1703,7 +1703,7 @@ class HashKeys(BaseModel):
         except Exception as e:
             log.error('RPM exceeded or Hash Service offline.  '
                       'Exception message: {}'.format(repr(e)))
-        return query 
+        return query
 
 
 def hex_bounds(center, steps=None, radius=None):
