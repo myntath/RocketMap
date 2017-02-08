@@ -422,6 +422,22 @@ class Pokemon(BaseModel):
 
         return filtered
 
+class Account(BaseModel):
+    account_id = IntegerField(primary_key=True)
+    name = CharField(null=False)
+    password = CharField(null=False)
+    login_type = CharField(null=False)
+    total_scans = IntegerField()
+    total_fails = IntegerField()
+    total_empty = IntegerField()
+    total_success = IntegerField()
+    last_cap_1 = IntegerField()
+    last_cap_2 = IntegerField()
+    last_cap_3 = IntegerField()
+    last_cap_4 = IntegerField()
+    last_cap_5 = IntegerField()
+    level = IntegerField()
+    last_active = DateTimeField()
 
 class Pokestop(BaseModel):
     pokestop_id = CharField(primary_key=True, max_length=50)
@@ -2340,7 +2356,7 @@ def create_tables(db):
     db.create_tables([Pokemon, Pokestop, Gym, ScannedLocation, GymDetails,
                       GymMember, GymPokemon, Trainer, MainWorker, WorkerStatus,
                       SpawnPoint, ScanSpawnPoint, SpawnpointDetectionData,
-                      Token, LocationAltitude], safe=True)
+                      Token, LocationAltitude, Accounts], safe=True)
     db.close()
 
 
@@ -2350,7 +2366,7 @@ def drop_tables(db):
                     GymDetails, GymMember, GymPokemon, Trainer, MainWorker,
                     WorkerStatus, SpawnPoint, ScanSpawnPoint,
                     SpawnpointDetectionData, LocationAltitude,
-                    Token, Versions], safe=True)
+                    Token, Version, Accounts], safe=True)
     db.close()
 
 
