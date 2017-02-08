@@ -442,6 +442,7 @@ class Account(BaseModel):
     total_fails = IntegerField()
     total_empty = IntegerField()
     total_success = IntegerField()
+    total_captcha = IntegerField()
     last_cap_1 = IntegerField()
     last_cap_2 = IntegerField()
     last_cap_3 = IntegerField()
@@ -449,6 +450,88 @@ class Account(BaseModel):
     last_cap_5 = IntegerField()
     level = IntegerField()
     last_active = DateTimeField()
+
+    @staticmethod
+    def get_accounts():
+        query = Account.select().dicts()
+        return query
+
+    @staticmethod
+    def get_account_name(name):
+        query = Account.select().where(Account.name == name).dicts()
+        return query
+    
+    @staticmethod
+    def get_account_id(account_id):
+        query = Account.select().where(Account.account_id == account_id).dicts()
+        return query
+    
+    @staticmethod
+    def update_accounts(name, fail, empty, captcha):
+
+        #check account exists
+        query = Account.select().where(Account.name == name).dicts()
+
+        if len(query) == 0:
+            log.error('The account {} does not exists can\'t update'.format(name))
+            return False
+
+        else if len(query) > 1:
+            log.error('Multiple accounts with the same way, the database should not be in this state')
+            return False
+
+        #check not more than one of fail, empty or captcha are true
+        if (fail and empty) or (fail and captcha) or (captcha and empty):
+            log.error('Scan should not have multiple fail, empty or captcha')
+            return False
+
+        #add 1 to scans
+        query[0]['total_scans'] += 1
+
+        #deal with fail case
+        if fail:
+            query[0]['total_fails'] +=  1
+
+        #deal with empty case
+        if empty:
+            query[0]['total_empty'] += 1
+
+        #deal with captcha case
+        if captcha:
+            query[0]['total_captcha'] += 1
+            query[0]['last_cap_5'] = query[0]['last_cap_4']
+            query[0]['last_cap_4'] = query[0]['last_cap_3']
+            query[0]['last_cap_3'] = query[0]['last_cap_2']
+            query[0]['last_cap_2'] = query[0]['last_cap_1']
+            query[0]['last_cap_1'] = query[0]['total_scans']
+
+        db_update_queue.put(Account, query)
+        return True
+
+    @staticmethod
+    def add_account(name, password, account_type):
+
+        #check exists
+        query = Account.select().where(Account.name == name).dicts()
+
+        if len(query) <> 0:
+            log.error('The account {} already exists'.format(name))
+            return False
+
+        #check login type valid
+        validTypes = ['ptc', 'google']
+
+        if account_type not in validTypes:
+            log.error('Invalid account type: {}'.format(account_type))
+            return False
+
+        #add account 
+        account = ['']
+        account[0] = {'name': name,
+                      'password': password,
+                      'login_type': account_type}
+        db_update_queue.put(Accounts, account) 
+        return True
 
 class Pokestop(BaseModel):
     pokestop_id = CharField(primary_key=True, max_length=50)
