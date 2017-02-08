@@ -422,23 +422,53 @@ class Pokemon(BaseModel):
 
         return filtered
 
-class Account(BaseModel):
-    account_id = IntegerField(primary_key=True)
+class BadScans(BaseModel):
     name = CharField(null=False)
+    scan_type = CharField(null=False)
+    scan_number = IntegerField(null=False)
+    lat = CharField(default='-1')
+    lon = CharField(default='-1')
+    time = DateTimeField(default=datetime.utcnow())
+
+    @staticmethod
+    def add_bad_scan(name, scan_type, lat, lon, db_update_queue):
+        query = Account.select().where(Account.name == name).dicts()
+        result = []
+        for i in query:
+            result.append(i)
+
+        if len(result) <> 1:
+           log.error('You account db is borked')
+           return False
+
+        result = result[0]
+        scan_number = result['total_scans']
+        out = {'name': name,
+               'scan_type': scan_type,
+               'scan_number': scan_number,
+               'lat': lat,
+               'lon': lon,
+               'time': datetime.utcnow()}
+        out = {0: out}
+        db_update_queue.put((BadScans, out))
+        return True
+
+class Account(BaseModel):
+    name = CharField(primary_key=True, null=False)
     password = CharField(null=False)
     login_type = CharField(null=False)
-    total_scans = IntegerField()
-    total_fails = IntegerField()
-    total_empty = IntegerField()
-    total_success = IntegerField()
-    total_captcha = IntegerField()
-    last_cap_1 = IntegerField()
-    last_cap_2 = IntegerField()
-    last_cap_3 = IntegerField()
-    last_cap_4 = IntegerField()
-    last_cap_5 = IntegerField()
-    level = IntegerField()
-    last_active = DateTimeField()
+    total_scans = IntegerField(default=0)
+    total_fails = IntegerField(default=0)
+    total_empty = IntegerField(default=0)
+    total_success = IntegerField(default=0)
+    total_captcha = IntegerField(default=0)
+    last_cap_1 = IntegerField(default=-1)
+    last_cap_2 = IntegerField(default=-1)
+    last_cap_3 = IntegerField(default=-1)
+    last_cap_4 = IntegerField(default=-1)
+    last_cap_5 = IntegerField(default=-1)
+    level = IntegerField(default=-1)
+    last_active = DateTimeField(default=datetime.utcnow())
 
     @staticmethod
     def get_accounts():
@@ -451,21 +481,18 @@ class Account(BaseModel):
         return query
     
     @staticmethod
-    def get_account_id(account_id):
-        query = Account.select().where(Account.account_id == account_id).dicts()
-        return query
-    
-    @staticmethod
-    def update_accounts(name, fail, empty, captcha):
+    def update_accounts(db_update_queue, name, fail, empty, captcha):
 
         #check account exists
-        query = Account.select().where(Account.name == name).dicts()
-
-        if len(query) == 0:
+        query = (Account.select().where(Account.name == name).dicts())
+        result=[]
+        for i in query:
+            result.append(i)
+        if len(result) == 0:
             log.error('The account {} does not exists can\'t update'.format(name))
             return False
 
-        else if len(query) > 1:
+        elif len(result) > 1:
             log.error('Multiple accounts with the same way, the database should not be in this state')
             return False
 
@@ -475,36 +502,42 @@ class Account(BaseModel):
             return False
 
         #add 1 to scans
-        query[0]['total_scans'] += 1
+        result[0]['total_scans'] += 1
+        result[0]['last_active'] = datetime.utcnow()
 
         #deal with fail case
         if fail:
-            query[0]['total_fails'] +=  1
+            result[0]['total_fails'] +=  1
 
         #deal with empty case
-        if empty:
-            query[0]['total_empty'] += 1
+        elif empty:
+            result[0]['total_empty'] += 1
 
         #deal with captcha case
-        if captcha:
-            query[0]['total_captcha'] += 1
-            query[0]['last_cap_5'] = query[0]['last_cap_4']
-            query[0]['last_cap_4'] = query[0]['last_cap_3']
-            query[0]['last_cap_3'] = query[0]['last_cap_2']
-            query[0]['last_cap_2'] = query[0]['last_cap_1']
-            query[0]['last_cap_1'] = query[0]['total_scans']
+        elif captcha:
+            result[0]['total_captcha'] += 1
+            result[0]['last_cap_5'] = result[0]['last_cap_4']
+            result[0]['last_cap_4'] = result[0]['last_cap_3']
+            result[0]['last_cap_3'] = result[0]['last_cap_2']
+            result[0]['last_cap_2'] = result[0]['last_cap_1']
+            result[0]['last_cap_1'] = result[0]['total_scans']
 
-        db_update_queue.put(Account, query)
+        #must be a success
+        else:
+            result[0]['total_success'] += 1
+
+        out = {0:result[0]}
+        db_update_queue.put((Account, out))
         return True
 
     @staticmethod
-    def add_account(name, password, account_type):
+    def add_account(db_update_queue, name, password, account_type):
 
         #check exists
         query = Account.select().where(Account.name == name).dicts()
 
         if len(query) <> 0:
-            log.error('The account {} already exists'.format(name))
+            log.debug('The account {} already exists'.format(name))
             return False
 
         #check login type valid
@@ -515,11 +548,13 @@ class Account(BaseModel):
             return False
 
         #add account 
-        account = ['']
+        account = {}
         account[0] = {'name': name,
                       'password': password,
                       'login_type': account_type}
-        db_update_queue.put(Accounts, account) 
+
+        db_update_queue.put((Account, account))
+        log.info('Added account: {}'.format(name)) 
         return True
 
 class Pokestop(BaseModel):
@@ -1248,7 +1283,6 @@ class WorkerStatus(BaseModel):
                          (datetime.utcnow() - timedelta(minutes=5))))
                  .order_by(WorkerStatus.username)
                  .dicts())
-
         status = []
         for s in query:
             status.append(s)
@@ -1855,12 +1889,10 @@ def parse_map(args, map_dict, step_location, db_update_queue, wh_update_queue,
                  .where((Pokemon.disappear_time > datetime.utcnow()) &
                         (Pokemon.encounter_id << encounter_ids))
                  .dicts())
-
         # Store all encounter_ids and spawnpoint_ids for the Pokemon in query.
         # All of that is needed to make sure it's unique.
         encountered_pokemon = [
             (p['encounter_id'], p['spawnpoint_id']) for p in query]
-
         for p in wild_pokemon:
 
             sp = SpawnPoint.get_by_id(p['spawn_point_id'], p[
@@ -2326,6 +2358,7 @@ def db_updater(args, q, db):
 
             # Loop the queue.
             while True:
+                
                 model, data = q.get()
                 bulk_upsert(model, data, db)
                 q.task_done()
@@ -2407,7 +2440,6 @@ def bulk_upsert(cls, data, db):
             # errors.
             if args.db_type == 'mysql':
                 db.execute_sql('SET FOREIGN_KEY_CHECKS=0;')
-
             InsertQuery(cls, rows=data.values()[
                         i:min(i + step, num_rows)]).upsert().execute()
 
@@ -2439,7 +2471,7 @@ def create_tables(db):
     db.create_tables([Pokemon, Pokestop, Gym, ScannedLocation, GymDetails,
                       GymMember, GymPokemon, Trainer, MainWorker, WorkerStatus,
                       SpawnPoint, ScanSpawnPoint, SpawnpointDetectionData,
-                      Token, LocationAltitude, Accounts], safe=True)
+                      Token, LocationAltitude, Account, BadScans], safe=True)
     db.close()
 
 
@@ -2449,7 +2481,7 @@ def drop_tables(db):
                     GymDetails, GymMember, GymPokemon, Trainer, MainWorker,
                     WorkerStatus, SpawnPoint, ScanSpawnPoint,
                     SpawnpointDetectionData, LocationAltitude,
-                    Token, Version, Accounts], safe=True)
+                    Token, Version, Account, BadScans], safe=True)
     db.close()
 
 
