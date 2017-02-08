@@ -40,7 +40,7 @@ from pgoapi.utilities import f2i
 from pgoapi import utilities as util
 from pgoapi.hash_server import HashServer
 
-from .models import parse_map, GymDetails, parse_gyms, MainWorker, WorkerStatus
+from .models import parse_map, GymDetails, parse_gyms, MainWorker, WorkerStatus, Account, BadScans
 from .fakePogoApi import FakePogoApi
 from .utils import now, generate_device_info
 from .transform import get_new_coords, jitter_location
@@ -368,6 +368,7 @@ def search_overseer_thread(args, new_location_queue, pause_bit, heartb,
     to prevent accounts from being cycled through too quickly.
     '''
     for i, account in enumerate(args.accounts):
+        Account.add_account(db_updates_queue, account['username'], account['password'], account['auth_service'])
         account_queue.put(account)
 
     # Create a list for failed accounts.
@@ -1001,6 +1002,10 @@ def search_worker_thread(args, account_queue, account_failures,
                                              account_failures,
                                              account_captchas, whq,
                                              response_dict, step_location, account_queue)
+                    if captcha is not None:
+                        Account.update_accounts(dbq, account['username'],False, False, True)
+                        BadScans.add_bad_scan(account['username'], 'captcha', step_location[0], step_location[1], dbq)
+
                     if captcha is not None and captcha:
                         # Make another request for the same location
                         # since the previous one was captcha'd.
@@ -1018,9 +1023,12 @@ def search_worker_thread(args, account_queue, account_failures,
                     if parsed['count'] > 0:
                         status['success'] += 1
                         consecutive_noitems = 0
+                        Account.update_accounts(dbq, account['username'],False, False, False)
                     else:
                         status['noitems'] += 1
                         consecutive_noitems += 1
+                        Account.update_accounts(dbq, account['username'],False, True, False)
+                        BadScans.add_bad_scan(account['username'], 'empty', step_location[0], step_location[1], dbq)
                     consecutive_fails = 0
                     status['message'] = ('Search at {:6f},{:6f} completed ' +
                                          'with {} finds.').format(
@@ -1038,6 +1046,8 @@ def search_worker_thread(args, account_queue, account_failures,
                                          'banned.').format(step_location[0],
                                                            step_location[1],
                                                            account['username'])
+                    Account.update_accounts(dbq, account['username'], True, False, False)
+                    BadScans.add_bad_scan(account['username'], 'fail', step_location[0], step_location[1], dbq)
                     log.exception('{}. Exception message: {}'.format(
                         status['message'], repr(e)))
 
