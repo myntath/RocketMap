@@ -1089,6 +1089,7 @@ class MainWorker(BaseModel):
     accounts_working = IntegerField()
     accounts_captcha = IntegerField()
     accounts_failed = IntegerField()
+    account_reserve = IntegerField()
 
     @staticmethod
     def get_total_captchas():
@@ -1099,13 +1100,15 @@ class MainWorker(BaseModel):
         account_stats = (MainWorker
                          .select(fn.SUM(MainWorker.accounts_working),
                                  fn.SUM(MainWorker.accounts_captcha),
-                                 fn.SUM(MainWorker.accounts_failed))
+                                 fn.SUM(MainWorker.accounts_failed),
+                                 fn.SUM(MainWorker.account_reserve))
                          .scalar(as_tuple=True))
-        dict = {'working': 0, 'captcha': 0, 'failed': 0}
+        dict = {'working': 0, 'captcha': 0, 'failed': 0, 'available': 0}
         if account_stats[0] is not None:
             dict = {'working': int(account_stats[0]),
                     'captcha': int(account_stats[1]),
-                    'failed': int(account_stats[2])}
+                    'failed': int(account_stats[2]),
+                    'available': int(account_stats[3])}
 
         return dict
 

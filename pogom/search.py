@@ -26,7 +26,7 @@ import random
 import time
 import copy
 
-from datetime import datetime
+from datetime import datetime, timedelta
 from threading import Thread, Lock
 from queue import Queue, Empty
 from sets import Set
@@ -48,6 +48,7 @@ from .proxy import get_new_proxy
 
 import schedulers
 import terminalsize
+import MySQLdb as mdb
 
 log = logging.getLogger(__name__)
 
@@ -328,7 +329,8 @@ def worker_status_db_thread(threads_status, name, db_updates_queue):
                     'last_modified': datetime.utcnow(),
                     'accounts_working': status['active_accounts'],
                     'accounts_captcha': status['accounts_captcha'],
-                    'accounts_failed': status['accounts_failed']
+                    'accounts_failed': status['accounts_failed'],
+                    'account_reserve': status['account_reserve']
                 }
             elif status['type'] == 'Worker':
                 workers[status['username']] = WorkerStatus.db_format(
@@ -373,6 +375,7 @@ def search_overseer_thread(args, new_location_queue, pause_bit, heartb,
         'accounts_captcha': 0,
         'accounts_failed': 0,
         'active_accounts': 0,
+        'account_reserve': 0,
         'skip_total': 0,
         'captcha_total': 0,
         'success_total': 0,
@@ -482,12 +485,25 @@ def search_overseer_thread(args, new_location_queue, pause_bit, heartb,
             pause_bit.set()
             log.info('Searching paused due to inactivity...')
 
+        scanningTime = getScanTime()
         # Wait here while scanning is paused.
-        while pause_bit.is_set():
+        setPauseOnce = True
+        while pause_bit.is_set() or (scanningTime < datetime.now() and args.status_name == "Main" and account_queue.qsize < 100):
+            if setPauseOnce:
+                setPauseOnce = False
+                writePause(1) #write true paused
+                
             for i in range(0, len(scheduler_array)):
                 scheduler_array[i].scanning_paused()
-            time.sleep(1)
-
+            scanningTime = getScanTime()
+            # Update Overseer statistics
+            threadStatus['Overseer']['accounts_failed'] = len(account_failures)
+            threadStatus['Overseer']['accounts_captcha'] = len(account_captchas)
+            threadStatus['Overseer']['account_reserve'] = account_queue.qsize()
+            log.info('Paused')
+            time.sleep(5)
+        if not setPauseOnce:
+            writePause(0) #write not paused
         # If a new location has been passed to us, get the most recent one.
         if not new_location_queue.empty():
             log.info('New location caught, moving search grid.')
@@ -544,6 +560,7 @@ def search_overseer_thread(args, new_location_queue, pause_bit, heartb,
         # Update Overseer statistics
         threadStatus['Overseer']['accounts_failed'] = len(account_failures)
         threadStatus['Overseer']['accounts_captcha'] = len(account_captchas)
+        threadStatus['Overseer']['account_reserve'] = account_queue.qsize()
 
         # Send webhook updates when scheduler status changes.
         if args.webhook_scheduler_updates:
@@ -599,11 +616,14 @@ def get_stats_message(threadStatus):
     ccost = cph * 0.00299
     cmonth = ccost * 730
 
-    message = ('Total active: {}  |  Success: {} ({:.1f}/hr) | ' +
+    message = ('Total active: {}  | Available: {}  | Captch\'d: {}  | On Hold: {} |  Success: {} ({:.1f}/hr) | ' +
                'Fails: {} ({:.1f}/hr) | Empties: {} ({:.1f}/hr) | ' +
                'Skips {} ({:.1f}/hr) | ' +
                'Captchas: {} ({:.1f}/hr)|${:.5f}/hr|${:.3f}/mo').format(
                    overseer['active_accounts'],
+                   overseer['account_reserve'],
+                   overseer['accounts_captcha'],
+                   overseer['accounts_failed'],
                    overseer['success_total'], sph,
                    overseer['fail_total'], fph,
                    overseer['empty_total'], eph,
@@ -962,7 +982,7 @@ def search_worker_thread(args, account_queue, account_failures,
                     captcha = handle_captcha(args, status, api, account,
                                              account_failures,
                                              account_captchas, whq,
-                                             response_dict, step_location)
+                                             response_dict, step_location, account_queue)
                     if captcha is not None and captcha:
                         # Make another request for the same location
                         # since the previous one was captcha'd.
@@ -1212,3 +1232,32 @@ def stagger_thread(args):
 # The delta from last stat to current stat
 def stat_delta(current_status, last_status, stat_name):
     return current_status.get(stat_name, 0) - last_status.get(stat_name, 0)
+
+# Gets the time we should continue scanning to, to decide whether to pause or not
+def getScanTime():
+    try:
+        con
+    except NameError:
+        con = mdb.connect('localhost', 'powermondbuser', 'lRac[0432', 'mynt')
+    with con:
+        cur = con.cursor()
+        cur.execute("SELECT time_pressed FROM scannertime WHERE press_number=(SELECT MAX(press_number) FROM scannertime)")
+        timeToScan = cur.fetchone()
+        timeToScan = timeToScan[0]
+        timeToScan = timeToScan + timedelta(minutes=120)
+    con.close()
+    cur.close()
+    return timeToScan
+
+def writePause(state):
+    
+    try:
+        con
+    except NameError:
+        con = mdb.connect('localhost', 'powermondbuser', 'lRac[0432', 'mynt')
+    with con:
+        cur = con.cursor()
+        cur.execute("INSERT INTO paused (number, time, state) VALUES (NULL, NOW(), {})".format(state))
+    con.close()
+    cur.close()
+    return

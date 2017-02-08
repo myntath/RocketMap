@@ -177,7 +177,7 @@ def captcha_solver_thread(args, account_queue, account_captchas, hash_key,
 
 
 def handle_captcha(args, status, api, account, account_failures,
-                   account_captchas, whq, response_dict, step_location):
+                   account_captchas, whq, response_dict, step_location, account_queue):
     try:
         captcha_url = response_dict['responses'][
             'CHECK_CHALLENGE']['challenge_url']
@@ -202,7 +202,7 @@ def handle_captcha(args, status, api, account, account_failures,
                     whq.put(('captcha', wh_message))
                 return False
 
-            if args.captcha_key and args.manual_captcha_timeout == 0:
+            if (args.captcha_key and args.manual_captcha_timeout == 0) or (args.captcha_key and account_queue.qsize() < 8):
                 if automatic_captcha_solve(args, status, api, captcha_url,
                                            account, whq):
                     return True
