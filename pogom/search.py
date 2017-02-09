@@ -499,7 +499,7 @@ def search_overseer_thread(args, new_location_queue, pause_bit, heartb,
         scanningTime = getScanTime()
         # Wait here while scanning is paused.
         setPauseOnce = True
-        while pause_bit.is_set() or (scanningTime < datetime.now() and args.status_name == "Main" and account_queue.qsize < 100):
+        while pause_bit.is_set() or (scanningTime < datetime.now() and args.status_name == "Main" and account_queue.qsize() < 10):
             if setPauseOnce:
                 setPauseOnce = False
                 writePause(1) #write true paused
