@@ -956,6 +956,7 @@ def search_worker_thread(args, account_queue, account_failures,
                 if not response_dict:
                     status['fail'] += 1
                     consecutive_fails += 1
+                    flog.error(account['username'] + ':nothing returned')
                     status['message'] = messages['invalid']
                     log.error(status['message'])
                     time.sleep(scheduler.delay(status['last_scan_date']))
