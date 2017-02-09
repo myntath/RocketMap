@@ -979,6 +979,7 @@ def search_worker_thread(args, account_queue, account_failures,
                     consecutive_fails += 1
                     Account.update_accounts(dbq, account['username'], True, False, False)
                     BadScans.add_bad_scan(account['username'], 'fail', step_location[0], step_location[1], dbq)
+                    flog.error(account['username'] + ':nothing returned')
                     status['message'] = messages['invalid']
                     log.error(status['message'])
                     time.sleep(scheduler.delay(status['last_scan_date']))
