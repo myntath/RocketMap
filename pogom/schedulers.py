@@ -59,7 +59,7 @@ from operator import itemgetter
 from datetime import datetime, timedelta
 from .transform import get_new_coords
 from .models import (hex_bounds, Pokemon, SpawnPoint, ScannedLocation,
-                     ScanSpawnPoint, HashKeys)
+                     ScanSpawnPoint)
 from .utils import now, cur_sec, cellid, date_secs, equi_rect_distance
 from .altitude import get_altitude
 
@@ -1092,6 +1092,23 @@ class KeyScheduler(object):
     def next(self):
         self.curr_key = self.key_cycle.next()
         return self.curr_key
+
+    def check_valid(self, keys, api):
+        self.keys = {}
+        for c in keys:
+            try:
+                request = api.create_request()
+                request.get_player(
+                        player_locale={'country': 'US',
+                                       'language': 'en',
+                                       'timezone': 'America/Denver'})
+                request.call()
+                response = request.call().get('responses', {})
+                if response.get(
+                 'responses', {}).get('GET_PLAYER', {}):
+                    log.debug('{} Hash Key Valid').format(key)
+            except Exception as e:
+                    log.error('{} INVALID HASH-KEY!').format(key)
 
     def save_keys(self, keys, Hashkeys, db_update_queue):
         db_update_queue.put((Hashkeys, self.keys))
