@@ -453,11 +453,6 @@ def search_overseer_thread(args, new_location_queue, pause_bit, heartb,
             'noitems': 0,
             'skip': 0,
             'captcha': 0,
-            'hash_key': 0,
-            'maximum_rpm': 0,
-            'rpm_left': 0,
-            'peak_key': 0,
-            'expires': 0,
             'username': '',
             'proxy_display': proxy_display,
             'proxy_url': proxy_url,
@@ -758,11 +753,6 @@ def search_worker_thread(args, account_queue, account_failures,
             status['noitems'] = 0
             status['skip'] = 0
             status['captcha'] = 0
-            status['hash_key'] = 0
-            status['maximum_rpm'] = 0
-            status['rpm_left'] = 0
-            status['peak_key'] = 0
-            status['expires'] = 0
 
             stagger_thread(args)
 
@@ -1028,10 +1018,7 @@ def search_worker_thread(args, account_queue, account_failures,
                     if parsed['count'] > 0:
                         status['success'] += 1
                         consecutive_noitems = 0
-                    # Check if Hash Key is used and set Values
-                        if (key_scheduler):
-                            status['hash_key'] = key
-                            status['maximum_rpm'] = key_instance['maximum']
+
                     else:
                         status['noitems'] += 1
                         consecutive_noitems += 1
@@ -1041,9 +1028,6 @@ def search_worker_thread(args, account_queue, account_failures,
                         step_location[0], step_location[1],
                         parsed['count'])
                     log.debug(status['message'])
-                    status['rpm_left'] = key_instance['remaining']
-                    status['peak_key'] = key_instance['peak']
-                    status['expires'] = key_instance['expires']
                     log.info(
                             ('Hash Key {} has {}/{} RPM ' +
                              'left.').format(key,

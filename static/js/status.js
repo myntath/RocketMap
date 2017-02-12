@@ -106,6 +106,8 @@ function processWorker(i, worker) {
         monthArray[lastModified.getMonth()] + ' ' +
         lastModified.getFullYear()
 
+    var expires = new Date(worker['expires'])
+
     $('#username_' + hash).html(worker['username'])
     $('#success_' + hash).html(worker['success'])
     $('#fail_' + hash).html(worker['fail'])
@@ -118,7 +120,7 @@ function processWorker(i, worker) {
     $('#maximum_rpm_' + hash).html(worker['maximum_rpm'])
     $('#rpm_left_' + hash).html(worker['rpm_left'])
     $('#peak_key_' + hash).html(worker['peak_key'])
-    $('#expires_' + hash).html(worker['expires'])
+    $('#expires_' + hash).html(expires)
 }
 
 function parseResult(result) {
@@ -342,6 +344,13 @@ $(document).ready(function () {
 
         $('#status_container .status_table').remove()
         $('#status_container .worker').remove()
+
+        if (statusPagePassword) {
+            updateStatus()
+        }
+    })
+    $('#hashkey-switch').click(function () {
+        $('div[id="hashrow_"]').toggle()
 
         if (statusPagePassword) {
             updateStatus()

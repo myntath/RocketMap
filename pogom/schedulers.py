@@ -59,7 +59,7 @@ from operator import itemgetter
 from datetime import datetime, timedelta
 from .transform import get_new_coords
 from .models import (hex_bounds, Pokemon, SpawnPoint, ScannedLocation,
-                     ScanSpawnPoint)
+                     ScanSpawnPoint, HashKeys)
 from .utils import now, cur_sec, cellid, date_secs, equi_rect_distance
 from .altitude import get_altitude
 
@@ -1066,8 +1066,8 @@ class SchedulerFactory():
             "The requested scheduler has not been implemented")
 
 
-# The KeyScheduler returns a scheduler that cycles through the given hash
-# server keys.
+# The KeyScheduler returns a scheduler that cycles through the given hash,
+# checking them for validation and save to the Database.
 class KeyScheduler(object):
 
     def __init__(self, keys):
@@ -1092,3 +1092,7 @@ class KeyScheduler(object):
     def next(self):
         self.curr_key = self.key_cycle.next()
         return self.curr_key
+
+    def save_keys(self, keys, Hashkeys, db_update_queue):
+        db_update_queue.put((Hashkeys, self.keys))
+        log.info('%d Hash Keys added to Database', self.keys)
