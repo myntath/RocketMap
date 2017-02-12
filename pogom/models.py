@@ -1669,7 +1669,7 @@ class Token(flaskDb.Model):
 
 
 class HashKeys(BaseModel):
-    keys = CharField(primary_key=True, max_length=20)
+    key = CharField(primary_key=True, max_length=20)
     maximum = IntegerField(default=0)
     remaining = IntegerField(default=0)
     peak = IntegerField(default=0)
@@ -1680,7 +1680,7 @@ class HashKeys(BaseModel):
     def get_by_key(key):
         query = (HashKeys
                  .select()
-                 .where(HashKeys.key == keys)
+                 .where(HashKeys.key == key)
                  .dicts())
 
         return query[0] if query else {
