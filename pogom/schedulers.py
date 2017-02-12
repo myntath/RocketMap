@@ -1106,9 +1106,10 @@ class KeyScheduler(object):
                 response = request.call().get('responses', {})
                 if response.get(
                  'responses', {}).get('GET_PLAYER', {}):
-                    log.debug('{} Hash Key Valid').format(key)
+                    log.debug('{} Hash Key Valid', self.keys)
             except Exception as e:
-                    log.error('{} INVALID HASH-KEY!').format(key)
+                    log.error('{} INVALID HASH-KEY!', self.keys).format(
+                        repr(e))
 
     def save_keys(self, keys, Hashkeys, db_update_queue):
         db_update_queue.put((Hashkeys, self.keys))
