@@ -1093,23 +1093,23 @@ class KeyScheduler(object):
         self.curr_key = self.key_cycle.next()
         return self.curr_key
 
-    def check_valid(self, keys, api):
-        self.keys = {}
-        for c in keys:
-            try:
-                request = api.create_request()
-                request.get_player(
-                        player_locale={'country': 'US',
-                                       'language': 'en',
-                                       'timezone': 'America/Denver'})
-                request.call()
-                response = request.call().get('responses', {})
-                if response.get(
-                 'responses', {}).get('GET_PLAYER', {}):
-                    log.debug('{} Hash Key Valid', self.keys)
-            except Exception as e:
-                    log.error('{} INVALID HASH-KEY!', self.keys).format(
-                        repr(e))
+    # def check_valid(self, keys, api):
+    #    self.keys = {}
+    #    for c in keys:
+    #        try:
+    #            request = api.create_request()
+    #            request.get_player(
+    #                    player_locale={'country': 'US',
+    #                                   'language': 'en',
+    #                                   'timezone': 'America/Denver'})
+    #            request.call()
+    #            response = request.call().get('responses', {})
+    #            if response.get(
+    #             'responses', {}).get('GET_PLAYER', {}):
+    #                log.debug('{} Hash Key Valid', self.keys)
+    #        except Exception as e:
+    #                log.error('{} INVALID HASH-KEY!', self.keys).format(
+    #                    repr(e))
 
     def save_keys(self, keys, Hashkeys, db_update_queue):
         db_update_queue.put((Hashkeys, self.keys))

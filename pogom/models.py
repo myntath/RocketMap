@@ -1118,11 +1118,6 @@ class WorkerStatus(BaseModel):
     no_items = IntegerField()
     skip = IntegerField()
     captcha = IntegerField()
-    hash_key = CharField(index=True, max_length=50, null=True)
-    maximum_rpm = IntegerField(default=0)
-    rpm_left = IntegerField(default=0)
-    peak_key = IntegerField(default=0, null=True)
-    expires = DateTimeField(index=True)
     last_modified = DateTimeField(index=True)
     message = CharField(max_length=255)
     last_scan_date = DateTimeField(index=True)
@@ -1139,11 +1134,6 @@ class WorkerStatus(BaseModel):
                 'no_items': status['noitems'],
                 'skip': status['skip'],
                 'captcha': status['captcha'],
-                'hash_key': status['hash_key'],
-                'maximum_rpm': status['maximum_rpm'],
-                'rpm_left': status['rpm_left'],
-                'peak_key': status['peak_key'],
-                'expires': status['expires'],
                 'last_modified': datetime.utcnow(),
                 'message': status['message'],
                 'last_scan_date': status.get('last_scan_date',
@@ -1679,7 +1669,7 @@ class Token(flaskDb.Model):
 
 
 class HashKeys(BaseModel):
-    key = CharField(primary_key=True, max_length=20)
+    keys = CharField(primary_key=True, max_length=20)
     maximum = IntegerField(default=0)
     remaining = IntegerField(default=0)
     peak = IntegerField(default=0)
@@ -1690,7 +1680,7 @@ class HashKeys(BaseModel):
     def get_by_key(key):
         query = (HashKeys
                  .select()
-                 .where(HashKeys.key == key)
+                 .where(HashKeys.key == keys)
                  .dicts())
 
         return query[0] if query else {
@@ -2512,19 +2502,3 @@ def database_migrate(db, old_ver):
 
         db.drop_tables([WorkerStatus])
         db.drop_tables([MainWorker])
-
-    if old_ver < 14:
-
-        migrate(
-            migrator.add_column('workerstatus', 'hash_key',
-                                CharField(
-                                    index=True, max_length=50, null=True)),
-            migrator.add_column('workerstatus', 'maximum_rpm',
-                                IntegerField(default=0)),
-            migrator.add_column('workerstatus', 'rpm_left',
-                                IntegerField(default=0)),
-            migrator.add_column('workerstatus', 'peak_key',
-                                IntegerField(default=0)),
-            migrator.add_column('workerstatus', 'expires',
-                                DateTimeField(default=0, null=True))
-        )
