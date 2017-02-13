@@ -17,7 +17,7 @@ from bisect import bisect_left
 
 from . import config
 from .models import (Pokemon, Gym, Pokestop, ScannedLocation,
-                     MainWorker, WorkerStatus, Token)
+                     MainWorker, WorkerStatus, Token, Account)
 from .utils import now, dottedQuadToNum, get_blacklist
 log = logging.getLogger(__name__)
 compress = Compress()
@@ -63,6 +63,8 @@ class Pogom(Flask):
         self.route("/inject.js", methods=['GET'])(self.render_inject_js)
         self.route("/submit_token", methods=['POST'])(self.submit_token)
         self.route("/get_stats", methods=['GET'])(self.get_account_stats)
+        self.route("/accounts", methods=['GET'])(self.get_full_account_stats)
+        self.route("/accounts", methods=['POST'])(self.post_account_status)
 
     def get_bookmarklet(self):
         return render_template('bookmarklet.html')
@@ -89,6 +91,26 @@ class Pogom(Flask):
         r = make_response(jsonify(**stats))
         r.headers.add('Access-Control-Allow-Origin', '*')
         return r
+
+    def get_full_account_stats(self):
+        args = get_args()
+        if args.status_page_password is None:
+            abort(404)
+
+        return render_template('acstatus.html')
+
+    def post_account_status(self):
+        args = get_args()
+        d = {}
+        if args.status_page_password is None:
+            abort(404)
+
+        if request.form.get('password', None) == args.status_page_password:
+            d['login'] = 'ok'
+            d['accounts'] = Account.get_all()
+        else:
+            d['login'] = 'failed'
+        return jsonify(d)
 
     def validate_request(self):
         if self._ip_is_blacklisted(request.remote_addr):
