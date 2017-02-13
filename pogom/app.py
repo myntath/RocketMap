@@ -17,7 +17,7 @@ from bisect import bisect_left
 
 from . import config
 from .models import (Pokemon, Gym, Pokestop, ScannedLocation,
-                     MainWorker, WorkerStatus, Token, HashKeys)
+                     MainWorker, WorkerStatus, Token, HashKeys, Account)
 from .utils import now, dottedQuadToNum, get_blacklist
 log = logging.getLogger(__name__)
 compress = Compress()
@@ -95,6 +95,26 @@ class Pogom(Flask):
         r = make_response(jsonify(**stats))
         r.headers.add('Access-Control-Allow-Origin', '*')
         return r
+
+    def get_full_account_stats(self):
+        args = get_args()
+        if args.status_page_password is None:
+            abort(404)
+
+        return render_template('acstatus.html')
+
+    def post_account_status(self):
+        args = get_args()
+        d = {}
+        if args.status_page_password is None:
+            abort(404)
+
+        if request.form.get('password', None) == args.status_page_password:
+            d['login'] = 'ok'
+            d['accounts'] = Account.get_all()
+        else:
+            d['login'] = 'failed'
+        return jsonify(d)
 
     def validate_request(self):
         args = get_args()
