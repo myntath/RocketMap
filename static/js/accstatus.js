@@ -18,9 +18,14 @@ function addWorker(mainWorkerHash, workerHash) {
        <div id="login_type_${workerHash}"     class="status_cell"/>
        <div id="total_scans_${workerHash}"  class="status_cell"/>
        <div id="total_fails_${workerHash}"     class="status_cell"/>
+       <div id="fail_rate_${workerHash}"     class="status_cell"/>
        <div id="total_empty_${workerHash}" class="status_cell"/>
-       <div id="lastmod_${workerHash}"  class="status_cell"/>
+       <div id="empty_rate_${workerHash}" class="status_cell"/>
+       <div id="total_captcha_${workerHash}" class="status_cell"/>
+       <div id="captcha_rate_${workerHash}" class="status_cell"/>
        <div id="total_success_${workerHash}"  class="status_cell"/>
+       <div id="success_rate_${workerHash}"  class="status_cell"/>
+       <div id="lastmod_${workerHash}"  class="status_cell"/>
      </div>
    `
 
@@ -53,8 +58,13 @@ function processAccount(i, worker) {
     $('#total_scans_' + hash).html(worker['total_scans'])
     $('#total_fails_' + hash).html(worker['total_fails'])
     $('#total_empty_' + hash).html(worker['total_empty'])
+    $('#fail_rate_' + hash).html(worker['fail_rate'])
+    $('#empty_rate_' + hash).html(worker['empty_rate'])
+    $('#captcha_rate_' + hash).html(worker['captcha_rate'])
     $('#lastmod_' + hash).html(lastModified)
     $('#total_success_' + hash).html(worker['total_success'])
+    $('#success_rate_' + hash).html(worker['success_rate'])
+    $('#total_captcha_' + hash).html(worker['total_captcha'])
 }
 
 function parseResult(result) {
@@ -85,13 +95,28 @@ function addTable(hash) {
            Fails
          </div>
          <div class="status_cell">
+           Fails %
+         </div>
+         <div class="status_cell">
            Empty
          </div>
          <div class="status_cell">
-           Last Modified
+           Empty %
+         </div>
+         <div class="status_cell">
+           Captcha
+         </div>
+         <div class="status_cell">
+           Captcha %
          </div>
          <div class="status_cell">
            Success
+         </div>
+         <div class="status_cell">
+           Success %
+         </div>
+         <div class="status_cell">
+           Last Used
          </div>
        </div>
      </div>
