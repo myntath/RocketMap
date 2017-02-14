@@ -997,19 +997,18 @@ def search_worker_thread(args, account_queue, account_failures,
                         if key_instance['expires'] == 'N/A':
                             expires = HashServer.status.get(
                                 'expiration', 'N/A')
+                            log.error(expires)
+                            expires = datetime.utcfromtimestamp(
+                                int(expires))
+                            from_zone = tz.tzutc()
+                            to_zone = tz.tzlocal()
 
-                            if expires == 'N/A':
-                                expires = datetime.utcfromtimestamp(
-                                    int(expires))
-                                from_zone = tz.tzutc()
-                                to_zone = tz.tzlocal()
+                            expires = expires.replace(tzinfo=from_zone)
+                            expires = expires.astimezone(to_zone)
+                            strExpires = expires.strftime(
+                                '%Y-%m-%d %H:%M:%S')
 
-                                expires = expires.replace(tzinfo=from_zone)
-                                expires = expires.astimezone(to_zone)
-                                expires = expires.strftime(
-                                    '%Y-%m-%d %H:%M:%S')
-
-                                key_instance['expires'] = expires
+                            key_instance['expires'] = expires
 
                     parsed = parse_map(args, response_dict, step_location,
                                        dbq, whq, api, scan_date)
@@ -1030,7 +1029,6 @@ def search_worker_thread(args, account_queue, account_failures,
                     key_out = {}
                     key_out[0] = key_instance
                     key_out[0]['key'] = key
-                    key_out[0]['expires'] = datetime.utcnow()
                     log.error(key_out)
                     HashKeys.upsert_keys(dbq, key_out)
                     log.info(
