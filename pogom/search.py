@@ -961,7 +961,7 @@ def search_worker_thread(args, account_queue, account_sets, account_failures,
                                             True, False, False)
                     BadScans.add_bad_scan(account['username'], 'fail',
                                           step_location[0], step_location[1],
-                                          dbq)
+                                          args.status_name, dbq)
                     status['message'] = messages['invalid']
                     log.error(status['message'])
                     time.sleep(scheduler.delay(status['last_scan_date']))
@@ -979,7 +979,8 @@ def search_worker_thread(args, account_queue, account_sets, account_failures,
                                                 False, False, True)
                         BadScans.add_bad_scan(account['username'], 'captcha',
                                               step_location[0],
-                                              step_location[1], dbq)
+                                              step_location[1],
+                                              args.status_name, dbq)
 
                     if captcha is not None and captcha:
                         # Make another request for the same location
@@ -1009,7 +1010,8 @@ def search_worker_thread(args, account_queue, account_sets, account_failures,
                                                 False, True, False)
                         BadScans.add_bad_scan(account['username'], 'empty',
                                               step_location[0],
-                                              step_location[1], dbq)
+                                              step_location[1],
+                                              args.status_name, dbq)
                     consecutive_fails = 0
                     status['message'] = ('Search at {:6f},{:6f} completed ' +
                                          'with {} finds.').format(
@@ -1031,7 +1033,7 @@ def search_worker_thread(args, account_queue, account_sets, account_failures,
                                             True, False, False)
                     BadScans.add_bad_scan(account['username'], 'fail',
                                           step_location[0], step_location[1],
-                                          dbq)
+                                          args.status_name, dbq)
                     log.exception('{}. Exception message: {}'.format(
                         status['message'], repr(e)))
                     if response_dict is not None:
