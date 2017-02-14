@@ -470,6 +470,24 @@ class Account(BaseModel):
     level = IntegerField(default=-1)
     last_active = DateTimeField(default=datetime.utcnow())
 
+    @classmethod
+    def get_all_stats(cls):
+        results = [m for m in Account.select().dicts()]
+        for i in range(0, len(results)):
+
+            if results[i]['total_scans'] == 0:
+                results[i]['fail_rate'] = '0'
+                results[i]['empty_rate'] = '0'
+                results[i]['captcha_rate'] = '0'
+                results[i]['success_rate'] = '0'
+            else:
+                results[i]['fail_rate'] = round(float(results[i]['total_fails']) / results[i]['total_scans'] * 100, 2)
+                results[i]['empty_rate'] = round(float(results[i]['total_empty']) / results[i]['total_scans'] * 100, 2)
+                results[i]['captcha_rate'] = round(float(results[i]['total_captcha']) / results[i]['total_scans'] * 100, 2)
+                results[i]['success_rate'] = round(float(results[i]['total_success']) / results[i]['total_scans'] * 100, 2)
+
+        return results
+
     @staticmethod
     def get_accounts():
         query = Account.select().dicts()
