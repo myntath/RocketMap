@@ -429,10 +429,11 @@ class BadScans(BaseModel):
     scan_number = IntegerField(null=False)
     lat = CharField(default='-1')
     lon = CharField(default='-1')
+    status_name = CharField(default='')
     time = DateTimeField(default=datetime.utcnow())
 
     @staticmethod
-    def add_bad_scan(name, scan_type, lat, lon, db_update_queue):
+    def add_bad_scan(name, scan_type, lat, lon, status_name, db_update_queue):
         query = Account.select().where(Account.name == name).dicts()
         result = []
         for i in query:
@@ -449,6 +450,7 @@ class BadScans(BaseModel):
                'scan_number': scan_number,
                'lat': lat,
                'lon': lon,
+               'status_name': status_name,
                'time': datetime.utcnow()}
         out = {0: out}
         db_update_queue.put((BadScans, out))
