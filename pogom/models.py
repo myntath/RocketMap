@@ -462,11 +462,6 @@ class Account(BaseModel):
     total_empty = IntegerField(default=0)
     total_success = IntegerField(default=0)
     total_captcha = IntegerField(default=0)
-    last_cap_1 = IntegerField(default=-1)
-    last_cap_2 = IntegerField(default=-1)
-    last_cap_3 = IntegerField(default=-1)
-    last_cap_4 = IntegerField(default=-1)
-    last_cap_5 = IntegerField(default=-1)
     last_active = DateTimeField(default=datetime.utcnow())
 
     @classmethod
