@@ -433,6 +433,7 @@ class Pokemon(BaseModel):
 
         return filtered
 
+
 class BadScans(BaseModel):
     name = CharField(null=False)
     scan_type = CharField(null=False)
@@ -541,7 +542,7 @@ class Account(BaseModel):
     def get_account_name(name):
         query = Account.select().where(Account.name == name).dicts()
         return query
-    
+
     @staticmethod
     def get_account_id(account_id):
         query = Account.select().where(Account.account_id == account_id).dicts()

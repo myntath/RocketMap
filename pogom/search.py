@@ -959,10 +959,17 @@ def search_worker_thread(args, account_queue, account_sets, account_failures,
                     status['fail'] += 1
                     consecutive_fails += 1
                     Account.update_accounts(dbq, account['username'],
+<<<<<<< 5f94760b0b0b104bd3e491da2d13d1b32ff5eda7
                                             True, False, False, 0)
                     BadScans.add_bad_scan(account['username'], 'fail',
                                           step_location[0], step_location[1],
                                           args.status_name, dbq)
+=======
+                                            True, False, False)
+                    BadScans.add_bad_scan(account['username'], 'fail',
+                                          step_location[0], step_location[1],
+                                          dbq)
+>>>>>>> Changes to meet flake8 and grunt lint
                     status['message'] = messages['invalid']
                     log.error(status['message'])
                     time.sleep(scheduler.delay(status['last_scan_date']))
@@ -992,11 +999,18 @@ def search_worker_thread(args, account_queue, account_sets, account_failures,
                                              response_dict, step_location)
                     if captcha is not None:
                         Account.update_accounts(dbq, account['username'],
+<<<<<<< 5f94760b0b0b104bd3e491da2d13d1b32ff5eda7
                                                 False, False, True, level)
                         BadScans.add_bad_scan(account['username'], 'captcha',
                                               step_location[0],
                                               step_location[1],
                                               args.status_name, dbq)
+=======
+                                                False, False, True)
+                        BadScans.add_bad_scan(account['username'], 'captcha',
+                                              step_location[0],
+                                              step_location[1], dbq)
+>>>>>>> Changes to meet flake8 and grunt lint
 
                     if captcha is not None and captcha:
                         # Make another request for the same location
@@ -1018,16 +1032,27 @@ def search_worker_thread(args, account_queue, account_sets, account_failures,
                         status['success'] += 1
                         consecutive_noitems = 0
                         Account.update_accounts(dbq, account['username'],
+<<<<<<< 5f94760b0b0b104bd3e491da2d13d1b32ff5eda7
                                                 False, False, False, level)
+=======
+                                                False, False, False)
+>>>>>>> Changes to meet flake8 and grunt lint
                     else:
                         status['noitems'] += 1
                         consecutive_noitems += 1
                         Account.update_accounts(dbq, account['username'],
+<<<<<<< 5f94760b0b0b104bd3e491da2d13d1b32ff5eda7
                                                 False, True, False, level)
                         BadScans.add_bad_scan(account['username'], 'empty',
                                               step_location[0],
                                               step_location[1],
                                               args.status_name, dbq)
+=======
+                                                False, True, False)
+                        BadScans.add_bad_scan(account['username'], 'empty',
+                                              step_location[0],
+                                              step_location[1], dbq)
+>>>>>>> Changes to meet flake8 and grunt lint
                     consecutive_fails = 0
                     status['message'] = ('Search at {:6f},{:6f} completed ' +
                                          'with {} finds.').format(
@@ -1046,11 +1071,18 @@ def search_worker_thread(args, account_queue, account_sets, account_failures,
                                                            step_location[1],
                                                            account['username'])
                     Account.update_accounts(dbq, account['username'],
+<<<<<<< 5f94760b0b0b104bd3e491da2d13d1b32ff5eda7
                                             True, False, False, level)
 
                     BadScans.add_bad_scan(account['username'], 'fail',
                                           step_location[0], step_location[1],
                                           args.status_name, dbq)
+=======
+                                            True, False, False)
+                    BadScans.add_bad_scan(account['username'], 'fail',
+                                          step_location[0], step_location[1],
+                                          dbq)
+>>>>>>> Changes to meet flake8 and grunt lint
                     log.exception('{}. Exception message: {}'.format(
                         status['message'], repr(e)))
                     if response_dict is not None:
