@@ -111,7 +111,7 @@ class Pogom(Flask):
 
         if request.form.get('password', None) == args.status_page_password:
             d['login'] = 'ok'
-            d['accounts'] = Account.get_all()
+            d['accounts'] = Account.get_all_stats()
         else:
             d['login'] = 'failed'
         return jsonify(d)
