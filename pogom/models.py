@@ -467,7 +467,6 @@ class Account(BaseModel):
     last_cap_3 = IntegerField(default=-1)
     last_cap_4 = IntegerField(default=-1)
     last_cap_5 = IntegerField(default=-1)
-    level = IntegerField(default=-1)
     last_active = DateTimeField(default=datetime.utcnow())
 
     @classmethod
@@ -534,11 +533,6 @@ class Account(BaseModel):
         #deal with captcha case
         elif captcha:
             result[0]['total_captcha'] += 1
-            result[0]['last_cap_5'] = result[0]['last_cap_4']
-            result[0]['last_cap_4'] = result[0]['last_cap_3']
-            result[0]['last_cap_3'] = result[0]['last_cap_2']
-            result[0]['last_cap_2'] = result[0]['last_cap_1']
-            result[0]['last_cap_1'] = result[0]['total_scans']
 
         #must be a success
         else:
