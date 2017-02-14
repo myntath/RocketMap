@@ -481,28 +481,28 @@ class Account(BaseModel):
     @classmethod
     def get_all_stats(cls):
         raw = [m for m in Account.select().dicts()]
-        for i in raw:
+        for i in range(0, len(raw)):
 
-            if i['total_scans'] == 0:
+            if raw[i]['total_scans'] == 0:
                 raw[i]['fail_rate'] = '0'
                 raw[i]['empty_rate'] = '0'
                 raw[i]['captcha_rate'] = '0'
                 raw[i]['success_rate'] = '0'
             else:
-                fr = float(i['total_fails'])
-                fr = fr / i['total_scans'] * 100
+                fr = float(raw[i]['total_fails'])
+                fr = fr / raw[i]['total_scans'] * 100
                 raw[i]['fail_rate'] = round(fr, 2)
 
-                er = float(i['total_empty'])
-                er = er / i['total_scans'] * 100
+                er = float(raw[i]['total_empty'])
+                er = er / raw[i]['total_scans'] * 100
                 raw[i]['empty_rate'] = round(er, 2)
 
-                cr = float(i['total_captcha'])
-                cr = cr / i['total_scans'] * 100
+                cr = float(raw[i]['total_captcha'])
+                cr = cr / raw[i]['total_scans'] * 100
                 raw[i]['captcha_rate'] = round(cr, 2)
 
-                sr = float(i['total_success'])
-                sr = sr / i['total_scans'] * 100
+                sr = float(raw[i]['total_success'])
+                sr = sr / raw[i]['total_scans'] * 100
                 raw[i]['success_rate'] = round(sr, 2)
 
         return raw
