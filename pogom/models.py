@@ -2633,10 +2633,7 @@ def db_updater(args, q, db):
 
             # Loop the queue.
             while True:
-<<<<<<< 684b9be5acd17e43f654135ba7bf874e7ccfd1c9
                 last_upsert = default_timer()
-=======
->>>>>>> Changes to meet flake8 and grunt lint
                 model, data = q.get()
 
                 bulk_upsert(model, data, db)
