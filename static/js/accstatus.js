@@ -4,7 +4,6 @@ var monthArray = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep',
 /* Main stats page */
 var rawDataIsLoading = false
 var statusPagePassword = false
-var groupByWorker = true
 
 // Raw data updating
 var minUpdateDelay = 1000 // Minimum delay between updates (in ms).
@@ -43,7 +42,7 @@ function processAccount(i, account) {
     if ($('#row_' + hash).length === 0) {
         addWorker(mainWorkerHash, hash)
     }
-    
+
     var lastModified = new Date(account['last_active'])
     lastModified = lastModified.getHours() + ':' +
         ('0' + lastModified.getMinutes()).slice(-2) + ':' +
