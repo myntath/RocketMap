@@ -38,7 +38,7 @@ from pgoapi.utilities import f2i
 from pgoapi import utilities as util
 from pgoapi.hash_server import HashServer
 
-from .models import parse_map, GymDetails, parse_gyms, MainWorker, WorkerStatus
+from .models import parse_map, GymDetails, parse_gyms, MainWorker, WorkerStatus, HashKeys
 from .fakePogoApi import FakePogoApi
 from .utils import now, generate_device_info
 from .transform import get_new_coords, jitter_location
@@ -1027,6 +1027,12 @@ def search_worker_thread(args, account_queue, account_failures,
                         step_location[0], step_location[1],
                         parsed['count'])
                     log.debug(status['message'])
+                    key_out = {}
+                    key_out[0] = key_instance
+                    key_out[0]['key'] = key
+                    key_out[0]['expires'] = datetime.utcnow()
+                    log.error(key_out)
+                    HashKeys.upsert_keys(dbq, key_out)
                     log.info(
                             ('Hash Key {} has {}/{} RPM ' +
                              'left.').format(key,
