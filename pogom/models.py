@@ -422,6 +422,7 @@ class Pokemon(BaseModel):
 
         return filtered
 
+
 class BadScans(BaseModel):
     name = CharField(null=False)
     scan_type = CharField(null=False)
@@ -437,9 +438,9 @@ class BadScans(BaseModel):
         for i in query:
             result.append(i)
 
-        if len(result) <> 1:
-           log.error('You account db is borked')
-           return False
+        if len(result) != 1:
+            log.error('You account db is borked')
+            return False
 
         result = result[0]
         scan_number = result['total_scans']
@@ -451,7 +452,9 @@ class BadScans(BaseModel):
                'time': datetime.utcnow()}
         out = {0: out}
         db_update_queue.put((BadScans, out))
+
         return True
+
 
 class Account(BaseModel):
     name = CharField(primary_key=True, null=False)
@@ -466,21 +469,32 @@ class Account(BaseModel):
 
     @classmethod
     def get_all_stats(cls):
-        results = [m for m in Account.select().dicts()]
-        for i in range(0, len(results)):
+        raw = [m for m in Account.select().dicts()]
+        for i in raw:
 
-            if results[i]['total_scans'] == 0:
-                results[i]['fail_rate'] = '0'
-                results[i]['empty_rate'] = '0'
-                results[i]['captcha_rate'] = '0'
-                results[i]['success_rate'] = '0'
+            if i['total_scans'] == 0:
+                raw[i]['fail_rate'] = '0'
+                raw[i]['empty_rate'] = '0'
+                raw[i]['captcha_rate'] = '0'
+                raw[i]['success_rate'] = '0'
             else:
-                results[i]['fail_rate'] = round(float(results[i]['total_fails']) / results[i]['total_scans'] * 100, 2)
-                results[i]['empty_rate'] = round(float(results[i]['total_empty']) / results[i]['total_scans'] * 100, 2)
-                results[i]['captcha_rate'] = round(float(results[i]['total_captcha']) / results[i]['total_scans'] * 100, 2)
-                results[i]['success_rate'] = round(float(results[i]['total_success']) / results[i]['total_scans'] * 100, 2)
+                fr = float(i['total_fails'])
+                fr = fr / i['total_scans'] * 100
+                raw[i]['fail_rate'] = round(fr, 2)
 
-        return results
+                er = float(i['total_empty'])
+                er = er / i['total_scans'] * 100
+                raw[i]['empty_rate'] = round(er, 2)
+
+                cr = float(i['total_captcha'])
+                cr = cr / i['total_scans'] * 100
+                raw[i]['captcha_rate'] = round(cr, 2)
+
+                sr = float(i['total_success'])
+                sr = sr / i['total_scans'] * 100
+                raw[i]['success_rate'] = round(sr, 2)
+
+        return raw
 
     @staticmethod
     def get_accounts():
@@ -491,78 +505,80 @@ class Account(BaseModel):
     def get_account_name(name):
         query = Account.select().where(Account.name == name).dicts()
         return query
-    
+
     @staticmethod
     def update_accounts(db_update_queue, name, fail, empty, captcha):
 
-        #check account exists
+        # check account exists
         query = (Account.select().where(Account.name == name).dicts())
-        result=[]
+        result = []
         for i in query:
             result.append(i)
         if len(result) == 0:
-            log.error('The account {} does not exists can\'t update'.format(name))
+            log.error('Account {} does not exists can\'t update'.format(name))
             return False
 
         elif len(result) > 1:
-            log.error('Multiple accounts with the same way, the database should not be in this state')
+            log.error('Multiple accounts with the same name')
             return False
 
-        #check not more than one of fail, empty or captcha are true
+        # check not more than one of fail, empty or captcha are true
         if (fail and empty) or (fail and captcha) or (captcha and empty):
             log.error('Scan should not have multiple fail, empty or captcha')
             return False
 
-        #add 1 to scans
+        # add 1 to scans
         result[0]['total_scans'] += 1
         result[0]['last_active'] = datetime.utcnow()
 
-        #deal with fail case
+        # deal with fail case
         if fail:
-            result[0]['total_fails'] +=  1
+            result[0]['total_fails'] += 1
 
-        #deal with empty case
+        # deal with empty case
         elif empty:
             result[0]['total_empty'] += 1
 
-        #deal with captcha case
+        # deal with captcha case
         elif captcha:
             result[0]['total_captcha'] += 1
 
-        #must be a success
+        # must be a success
         else:
             result[0]['total_success'] += 1
 
-        out = {0:result[0]}
+        out = {0: result[0]}
         db_update_queue.put((Account, out))
         return True
 
     @staticmethod
     def add_account(db_update_queue, name, password, account_type):
 
-        #check exists
+        # check exists
         query = Account.select().where(Account.name == name).dicts()
 
-        if len(query) <> 0:
+        if len(query) != 0:
             log.debug('The account {} already exists'.format(name))
             return False
 
-        #check login type valid
+        # check login type valid
         validTypes = ['ptc', 'google']
 
         if account_type not in validTypes:
             log.error('Invalid account type: {}'.format(account_type))
             return False
 
-        #add account 
+        # add account
         account = {}
         account[0] = {'name': name,
                       'password': password,
                       'login_type': account_type}
 
         db_update_queue.put((Account, account))
-        log.info('Added account: {}'.format(name)) 
+        log.info('Added account: {}'.format(name))
+
         return True
+
 
 class Pokestop(BaseModel):
     pokestop_id = CharField(primary_key=True, max_length=50)
@@ -2365,7 +2381,6 @@ def db_updater(args, q, db):
 
             # Loop the queue.
             while True:
-                
                 model, data = q.get()
                 bulk_upsert(model, data, db)
                 q.task_done()
