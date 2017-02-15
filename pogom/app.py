@@ -563,6 +563,7 @@ class Pogom(Flask):
             d['main_workers'] = MainWorker.get_all()
             d['workers'] = WorkerStatus.get_all()
             d['HashKeys'] = HashKeys.get_all()
+            log.error(d)
         else:
             d['login'] = 'failed'
         return jsonify(d)

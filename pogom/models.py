@@ -1676,11 +1676,6 @@ class HashKeys(BaseModel):
     expires = DateTimeField(null=True)
     last_updated = DateTimeField(default=datetime.utcnow)
 
-    @classmethod
-    def get_all(cls):
-        query = HashKeys.select().dicts()
-        return query
-
     @staticmethod
     def get_by_key(key):
         query = (HashKeys
