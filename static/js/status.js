@@ -5,6 +5,7 @@ var monthArray = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep',
 var rawDataIsLoading = false
 var statusPagePassword = false
 var groupByWorker = true
+var showHashKeys = true
 
 // Raw data updating
 var minUpdateDelay = 1000 // Minimum delay between updates (in ms).
@@ -24,7 +25,6 @@ function addMainWorker(hash) {
 
     $(worker).appendTo('#status_container')
     addTable(hash)
-    addhash(hash)
 }
 
 function processMainWorker(i, worker) {
@@ -59,12 +59,12 @@ function addWorker(mainWorkerHash, workerHash) {
 function addhashtable(mainWorkerHash, workerHash) {
     var hashrow = `
     <div id="hashrow_${workerHash}" class="status_row">
-      <div id="hash_key_${workerHash}" class="status_cell"/>
-      <div id="maximum_rpm_${workerHash}" class="status_cell"/>
-      <div id="rpm_left_${workerHash}" class="status_cell"/>
-      <div id="peak_key_${workerHash}" class="status_cell"/>
+      <div id="key_${workerHash}" class="status_cell"/>
+      <div id="maximum_${workerHash}" class="status_cell"/>
+      <div id="remaining_${workerHash}" class="status_cell"/>
+      <div id="peak_${workerHash}" class="status_cell"/>
       <div id="expires_${workerHash}" class="status_cell"/>
-      <div id="lastmod_${workerHash}" class="status_cell"/>
+      <div id="last_updated_${workerHash}" class="status_cell"/>
     </div>
     `
     $(hashrow).appendTo('#hashtable_' + mainWorkerHash)
@@ -75,8 +75,7 @@ function processWorker(i, worker) {
     var mainWorkerHash
     if (groupByWorker) {
         mainWorkerHash = hashFnv32a(worker['worker_name'], true)
-        if ($('#table_' + mainWorkerHash).length === 0 &&
-            ($('#hashtable_' + mainWorkerHash).length === 0)) {
+        if ($('#table_' + mainWorkerHash).length === 0) {
             return
         }
     } else {
@@ -84,18 +83,10 @@ function processWorker(i, worker) {
         if ($('#table_global').length === 0) {
             addTable('global')
         }
-
-        if ($('#hashtable_global').length === 0) {
-            addhash('global')
-        }
     }
 
     if ($('#row_' + hash).length === 0) {
         addWorker(mainWorkerHash, hash)
-    }
-
-    if ($('#hashrow_' + hash).length === 0) {
-        addhashtable(mainWorkerHash, hash)
     }
 
     var lastModified = new Date(worker['last_modified'])
@@ -106,8 +97,6 @@ function processWorker(i, worker) {
         monthArray[lastModified.getMonth()] + ' ' +
         lastModified.getFullYear()
 
-    var expires = new Date(worker['expires'])
-
     $('#username_' + hash).html(worker['username'])
     $('#success_' + hash).html(worker['success'])
     $('#fail_' + hash).html(worker['fail'])
@@ -116,18 +105,52 @@ function processWorker(i, worker) {
     $('#captchas_' + hash).html(worker['captcha'])
     $('#lastmod_' + hash).html(lastModified)
     $('#message_' + hash).html(worker['message'])
-    $('#hash_key_' + hash).html(worker['hash_key'])
-    $('#maximum_rpm_' + hash).html(worker['maximum_rpm'])
-    $('#rpm_left_' + hash).html(worker['rpm_left'])
-    $('#peak_key_' + hash).html(worker['peak_key'])
-    $('#expires_' + hash).html(expires)
 }
 
+function processHash(i, hashkey) {
+    var hash = hashFnv32a(hashkey['key'], true)
+    var mainHashHash
+    mainHashHash = 'global'
+    if ($('#hashtable_global').length === 0) {
+        addhash('global')
+    }
+
+    if ($('#hashrow_' + hash).length === 0) {
+        addhashtable(mainHashHash, hash)
+    }
+
+    var lastModified = new Date(hashkey['last_updated'])
+    lastModified = lastModified.getHours() + ':' +
+        ('0' + lastModified.getMinutes()).slice(-2) + ':' +
+        ('0' + lastModified.getSeconds()).slice(-2) + ' ' +
+        lastModified.getDate() + ' ' +
+        monthArray[lastModified.getMonth()] + ' ' +
+        lastModified.getFullYear()
+
+
+    var expires= new Date(hashkey['expires'])
+    expires = expires.getHours() + ':' +
+        ('0' + expires.getMinutes()).slice(-2) + ':' +
+        ('0' + expires.getSeconds()).slice(-2) + ' ' +
+        expires.getDate() + ' ' +
+        monthArray[expires.getMonth()] + ' ' +
+        expires.getFullYear()
+
+    $('#key_' + hash).html(hashkey['key'])
+    $('#maximum_' + hash).html(hashkey['maximum'])
+    $('#remaining_' + hash).html(hashkey['remaining'])
+    $('#peak_' + hash).html(hashkey['peak'])
+    $('#last_updated_' + hash).html(lastModified)
+    $('#expires_' + hash).html(expires)
+}
 function parseResult(result) {
     if (groupByWorker) {
         $.each(result.main_workers, processMainWorker)
     }
     $.each(result.workers, processWorker)
+    if (showHashKeys) {
+      $.each(result.HashKeys, processHash)
+    }
 }
 
 /*
@@ -349,9 +372,12 @@ $(document).ready(function () {
             updateStatus()
         }
     })
+
     $('#hashkey-switch').click(function () {
         $('div[id="hashrow_"]').toggle()
+        showHashKeys = this.checked
 
+        $('status_container .status_table').remove()
         if (statusPagePassword) {
             updateStatus()
         }
