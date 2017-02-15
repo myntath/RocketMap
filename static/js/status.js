@@ -6,6 +6,7 @@ var rawDataIsLoading = false
 var statusPagePassword = false
 var groupByWorker = true
 var showHashTable = true
+var showWorkersTable = true
 
 // Raw data updating
 var minUpdateDelay = 1000 // Minimum delay between updates (in ms).
@@ -144,10 +145,12 @@ function processHash(i, hashkey) {
     $('#expires_' + hash).html(expires)
 }
 function parseResult(result) {
-    if (groupByWorker) {
+    if (groupByWorker && showWorkersTable) {
         $.each(result.main_workers, processMainWorker)
     }
-    $.each(result.workers, processWorker)
+    if (showWorkersTable) {
+        $.each(result.workers, processWorker)
+    }
     if (showHashTable) {
         $.each(result.HashKeys, processHash)
     }
@@ -375,6 +378,17 @@ $(document).ready(function () {
 
     $('#hashkey-switch').change(function () {
         showHashTable = this.checked
+
+        $('#status_container .status_table').remove()
+        $('#status_container .worker').remove()
+
+        if (statusPagePassword) {
+            updateStatus()
+        }
+    })
+    
+    $('#showworker-switch').change(function () {
+        showWorkersTable = this.checked
 
         $('#status_container .status_table').remove()
         $('#status_container .worker').remove()
