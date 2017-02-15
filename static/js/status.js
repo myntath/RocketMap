@@ -5,6 +5,7 @@ var monthArray = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep',
 var rawDataIsLoading = false
 var statusPagePassword = false
 var groupByWorker = true
+var showHashKeys = true
 
 // Raw data updating
 var minUpdateDelay = 1000 // Minimum delay between updates (in ms).
@@ -142,13 +143,15 @@ function processHash(i, hashkey) {
     $('#last_updated_' + hash).html(lastModified)
     $('#expires_' + hash).html(expires)
 }
+
 function parseResult(result) {
     if (groupByWorker) {
         $.each(result.main_workers, processMainWorker)
-        $.each(result.HashKeys, processHash)
     }
     $.each(result.workers, processWorker)
-    $.each(result.HashKeys, processHash)
+    if (showHashKeys) {
+        $.each(result.HashKeys, processHash)
+    }
 }
 
 /*
@@ -366,6 +369,15 @@ $(document).ready(function () {
         $('#status_container .status_table').remove()
         $('#status_container .worker').remove()
 
+        if (statusPagePassword) {
+            updateStatus()
+        }
+    })
+
+    $('#hashkey-switch').change(function () {
+        showHashKeys = this.checked
+
+        $('#status_container .hash_table').remove()
         if (statusPagePassword) {
             updateStatus()
         }

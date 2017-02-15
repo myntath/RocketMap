@@ -911,7 +911,6 @@ def search_worker_thread(args, account_queue, account_failures,
                     key = key_scheduler.next()
                     log.debug('Using key {} for this scan.'.format(key))
                     api.activate_hash_server(key)
-
                 # Ok, let's get started -- check our login status.
                 status['message'] = 'Logging in...'
                 check_login(args, account, api, step_location,
@@ -1030,7 +1029,6 @@ def search_worker_thread(args, account_queue, account_failures,
                     key_out = {}
                     key_out[0] = key_instance
                     key_out[0]['key'] = key
-                    log.error(key_out)
                     HashKeys.upsert_keys(dbq, key_out)
                     log.info(
                             ('Hash Key {} has {}/{} RPM ' +
