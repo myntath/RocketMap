@@ -5,7 +5,6 @@ var monthArray = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep',
 var rawDataIsLoading = false
 var statusPagePassword = false
 var groupByWorker = true
-var showHashKeys = true
 
 // Raw data updating
 var minUpdateDelay = 1000 // Minimum delay between updates (in ms).
@@ -54,20 +53,6 @@ function addWorker(mainWorkerHash, workerHash) {
      </div>
    `
     $(row).appendTo('#table_' + mainWorkerHash)
-}
-
-function addHashWorker(mainWorkerHash, workerHash) {
-    var row = `
-     <div id="row_${workerHash}" class="status_row">
-       <div id="key_${workerHash}" class="status_cell"/>
-       <div id="maximum_${workerHash}"  class="status_cell"/>
-       <div id="remaining_${workerHash}"     class="status_cell"/>
-       <div id="peak_${workerHash}"  class="status_cell"/>
-       <div id="last_updated_${workerHash}"     class="status_cell"/>
-       <div id="expires_${workerHash}" class="status_cell"/>
-     </div>
-   `
-    $(row).appendTo('#hashtable_' + mainWorkerHash)
 }
 
 function addhashtable(mainWorkerHash, workerHash) {
@@ -142,7 +127,7 @@ function processHash(i, hashkey) {
         lastModified.getFullYear()
 
 
-    var expires = new Date(hashkey['expires'])
+    var expires= new Date(hashkey['expires'])
     expires = expires.getHours() + ':' +
         ('0' + expires.getMinutes()).slice(-2) + ':' +
         ('0' + expires.getSeconds()).slice(-2) + ' ' +
@@ -160,11 +145,10 @@ function processHash(i, hashkey) {
 function parseResult(result) {
     if (groupByWorker) {
         $.each(result.main_workers, processMainWorker)
-    }
-    $.each(result.workers, processWorker)
-    if (showHashKeys) {
         $.each(result.HashKeys, processHash)
     }
+    $.each(result.workers, processWorker)
+    $.each(result.HashKeys, processHash)
 }
 
 /*
@@ -382,14 +366,6 @@ $(document).ready(function () {
         $('#status_container .status_table').remove()
         $('#status_container .worker').remove()
 
-        if (statusPagePassword) {
-            updateStatus()
-        }
-    })
-    $('#hashkey-switch').click(function () {
-        $('div[id="hashrow_"]').toggle()
-        showHashKeys = this.checked
-        $('status_container .status_table').remove()
         if (statusPagePassword) {
             updateStatus()
         }
