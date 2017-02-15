@@ -17,7 +17,7 @@ from bisect import bisect_left
 
 from . import config
 from .models import (Pokemon, Gym, Pokestop, ScannedLocation,
-                     MainWorker, WorkerStatus, Token)
+                     MainWorker, WorkerStatus, Token, HashKeys)
 from .utils import now, dottedQuadToNum, get_blacklist
 log = logging.getLogger(__name__)
 compress = Compress()
@@ -89,6 +89,24 @@ class Pogom(Flask):
         r = make_response(jsonify(**stats))
         r.headers.add('Access-Control-Allow-Origin', '*')
         return r
+
+    def get_all(self):
+        args = get_args()
+        if args.status_page_password is None:
+            abort(404)
+
+    def post_all(self):
+        args = get_args()
+        d = {}
+        if args.status_page_password is None:
+            abort(404)
+
+        if request.form.get('password', None) == args.status_page_password:
+            d['login'] = 'ok'
+            d['HashKeys'] = HashKeys.get_all()
+        else:
+            d['login'] = 'failed'
+        return jsonify(d)
 
     def validate_request(self):
         if self._ip_is_blacklisted(request.remote_addr):
@@ -544,6 +562,7 @@ class Pogom(Flask):
             d['login'] = 'ok'
             d['main_workers'] = MainWorker.get_all()
             d['workers'] = WorkerStatus.get_all()
+            d['HashKeys'] = HashKeys.get_all()
         else:
             d['login'] = 'failed'
         return jsonify(d)

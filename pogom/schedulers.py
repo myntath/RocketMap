@@ -1066,14 +1066,14 @@ class SchedulerFactory():
             "The requested scheduler has not been implemented")
 
 
-# The KeyScheduler returns a scheduler that cycles through the given hash,
-# checking them for validation and save to the Database.
+# The KeyScheduler returns a scheduler that cycles through the given hashkeys
 class KeyScheduler(object):
 
     def __init__(self, keys):
         self.keys = {}
         for key in keys:
             self.keys[key] = {
+                'key': key,
                 'remaining': 0,
                 'maximum': 0,
                 'peak': 0,
@@ -1092,25 +1092,3 @@ class KeyScheduler(object):
     def next(self):
         self.curr_key = self.key_cycle.next()
         return self.curr_key
-
-    # def check_valid(self, keys, api):
-    #    self.keys = {}
-    #    for c in keys:
-    #        try:
-    #            request = api.create_request()
-    #            request.get_player(
-    #                    player_locale={'country': 'US',
-    #                                   'language': 'en',
-    #                                   'timezone': 'America/Denver'})
-    #            request.call()
-    #            response = request.call().get('responses', {})
-    #            if response.get(
-    #             'responses', {}).get('GET_PLAYER', {}):
-    #                log.debug('{} Hash Key Valid', self.keys)
-    #        except Exception as e:
-    #                log.error('{} INVALID HASH-KEY!', self.keys).format(
-    #                    repr(e))
-
-    def save_keys(self, keys, Hashkeys, db_update_queue):
-        db_update_queue.put((Hashkeys, self.keys))
-        log.info('%d Hash Keys added to Database', self.keys)

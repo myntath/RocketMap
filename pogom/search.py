@@ -38,7 +38,8 @@ from pgoapi.utilities import f2i
 from pgoapi import utilities as util
 from pgoapi.hash_server import HashServer
 
-from .models import parse_map, GymDetails, parse_gyms, MainWorker, WorkerStatus
+from .models import parse_map, GymDetails, parse_gyms, MainWorker, \
+    WorkerStatus, HashKeys
 from .fakePogoApi import FakePogoApi
 from .utils import now, generate_device_info
 from .transform import get_new_coords, jitter_location
@@ -316,7 +317,8 @@ def account_recycler(args, accounts_queue, account_failures):
                     a['notified'] = True
 
 
-def worker_status_db_thread(threads_status, name, db_updates_queue):
+def worker_status_db_thread(
+        threads_status, name, db_updates_queue):
 
     while True:
         workers = {}
@@ -384,7 +386,7 @@ def search_overseer_thread(args, new_location_queue, pause_bit, heartb,
         'scheduler_status': {'tth_found': 0}
     }
 
-    # Create the key scheduler.
+    # Create the key scheduler and overseer
     if args.hash_key:
         log.info('Enabling hashing key scheduler...')
         key_scheduler = schedulers.KeyScheduler(args.hash_key)
@@ -725,7 +727,7 @@ def search_worker_thread(args, account_queue, account_failures,
             # Force storing of previous worker info to keep consistency
             if 'starttime' in status:
                 dbq.put((WorkerStatus, {0: WorkerStatus.db_format(status)}))
-
+                dbq.put((HashKeys))
             status['starttime'] = now()
 
             # Track per loop.
@@ -948,7 +950,6 @@ def search_worker_thread(args, account_queue, account_failures,
                 # request.
                 status['latitude'] = step_location[0]
                 status['longitude'] = step_location[1]
-                dbq.put((WorkerStatus, {0: WorkerStatus.db_format(status)}))
 
                 # Nothing back. Mark it up, sleep, carry on.
                 if not response_dict:
@@ -997,19 +998,16 @@ def search_worker_thread(args, account_queue, account_failures,
                         if key_instance['expires'] == 'N/A':
                             expires = HashServer.status.get(
                                 'expiration', 'N/A')
+                            expires = datetime.utcfromtimestamp(int(expires))
+                            from_zone = tz.tzutc()
+                            to_zone = tz.tzlocal()
 
-                            if expires == 'N/A':
-                                expires = datetime.utcfromtimestamp(
-                                    int(expires))
-                                from_zone = tz.tzutc()
-                                to_zone = tz.tzlocal()
+                            expires = expires.replace(tzinfo=from_zone)
+                            expires = expires.astimezone(to_zone)
+                            expires = expires.strftime(
+                                '%Y-%m-%d %H:%M:%S')
 
-                                expires = expires.replace(tzinfo=from_zone)
-                                expires = expires.astimezone(to_zone)
-                                expires = expires.strftime(
-                                    '%Y-%m-%d %H:%M:%S')
-
-                                key_instance['expires'] = expires
+                            key_instance['expires'] = expires
 
                     parsed = parse_map(args, response_dict, step_location,
                                        dbq, whq, api, scan_date)
@@ -1017,7 +1015,6 @@ def search_worker_thread(args, account_queue, account_failures,
                     if parsed['count'] > 0:
                         status['success'] += 1
                         consecutive_noitems = 0
-
                     else:
                         status['noitems'] += 1
                         consecutive_noitems += 1
@@ -1027,6 +1024,11 @@ def search_worker_thread(args, account_queue, account_failures,
                         step_location[0], step_location[1],
                         parsed['count'])
                     log.debug(status['message'])
+                    key_out = {}
+                    key_out[0] = key_instance
+                    key_out[0]['key'] = key
+                    log.error(key_out)
+                    HashKeys.upsert_keys(dbq, key_out)
                     log.info(
                             ('Hash Key {} has {}/{} RPM ' +
                              'left.').format(key,

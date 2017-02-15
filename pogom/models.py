@@ -24,13 +24,13 @@ from datetime import datetime, timedelta
 from base64 import b64encode
 from cachetools import TTLCache
 from cachetools import cached
-
 from . import config
 from .utils import get_pokemon_name, get_pokemon_rarity, get_pokemon_types, \
     get_args, cellid, in_radius, date_secs, clock_between, secs_between, \
     get_move_name, get_move_damage, get_move_energy, get_move_type
 from .transform import transform_from_wgs_to_gcj, get_new_coords
 from .customLog import printPokemon
+
 log = logging.getLogger(__name__)
 
 args = get_args()
@@ -1676,6 +1676,11 @@ class HashKeys(BaseModel):
     expires = DateTimeField(null=True)
     last_updated = DateTimeField(default=datetime.utcnow)
 
+    @classmethod
+    def get_all(cls):
+        query = HashKeys.select().dicts()
+        return query
+
     @staticmethod
     def get_by_key(key):
         query = (HashKeys
@@ -1690,6 +1695,11 @@ class HashKeys(BaseModel):
             'expires': None,
             'last_updated': None
         }
+
+    @staticmethod
+    def upsert_keys(db_update_queue, keys):
+        db_update_queue.put((HashKeys, keys))
+        return True
 
 
 def hex_bounds(center, steps=None, radius=None):
@@ -2298,10 +2308,10 @@ def clean_db_loop(args):
             query.execute()
 
             # Remove expired HashKeys
-            # query = (HashKeys
-            #         .delete()
-            #         .where(HashKeys.expires >= HashKeys.expire))
-            # query.execute()
+            query = (HashKeys
+                     .delete()
+                     .where(HashKeys.expires >= HashKeys.expires))
+            query.execute()
 
             # If desired, clear old Pokemon spawns.
             if args.purge_data > 0:
