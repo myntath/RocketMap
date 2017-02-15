@@ -997,7 +997,6 @@ def search_worker_thread(args, account_queue, account_failures,
                         if key_instance['expires'] == 'N/A':
                             expires = HashServer.status.get(
                                 'expiration', 'N/A')
-                            log.error(expires)
                             expires = datetime.utcfromtimestamp(
                                 int(expires))
                             from_zone = tz.tzutc()
