@@ -106,7 +106,7 @@ class Pogom(Flask):
             d['HashKeys'] = HashKeys.get_all()
         else:
             d['login'] = 'failed'
-            return jsonify(d)
+        return jsonify(d)
 
     def validate_request(self):
         if self._ip_is_blacklisted(request.remote_addr):
@@ -563,6 +563,7 @@ class Pogom(Flask):
             d['main_workers'] = MainWorker.get_all()
             d['workers'] = WorkerStatus.get_all()
             d['HashKeys'] = HashKeys.get_all()
+            log.error(d)
         else:
             d['login'] = 'failed'
         return jsonify(d)

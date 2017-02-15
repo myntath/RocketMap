@@ -5,6 +5,7 @@ var monthArray = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep',
 var rawDataIsLoading = false
 var statusPagePassword = false
 var groupByWorker = true
+var showHashKeys = true
 
 // Raw data updating
 var minUpdateDelay = 1000 // Minimum delay between updates (in ms).
@@ -53,6 +54,20 @@ function addWorker(mainWorkerHash, workerHash) {
      </div>
    `
     $(row).appendTo('#table_' + mainWorkerHash)
+}
+
+function addHashWorker(mainWorkerHash, workerHash) {
+    var row = `
+     <div id="row_${workerHash}" class="status_row">
+       <div id="key_${workerHash}" class="status_cell"/>
+       <div id="maximum_${workerHash}"  class="status_cell"/>
+       <div id="remaining_${workerHash}"     class="status_cell"/>
+       <div id="peak_${workerHash}"  class="status_cell"/>
+       <div id="last_updated_${workerHash}"     class="status_cell"/>
+       <div id="expires_${workerHash}" class="status_cell"/>
+     </div>
+   `
+    $(row).appendTo('#hashtable_' + mainWorkerHash)
 }
 
 function addhashtable(mainWorkerHash, workerHash) {
@@ -172,8 +187,8 @@ function addhash(hash) {
         Peak
         </div>
        <div class="status_cell">
-        Expires at
-        </div>
+         Expires at
+       </div>
        <div class="status_cell">
          Last Modified
        </div>
