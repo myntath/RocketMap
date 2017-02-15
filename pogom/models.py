@@ -1696,9 +1696,6 @@ class HashKeys(BaseModel):
         db_update_queue.put((HashKeys, keys))
         return True
 
-    # @staticmethod
-    # def check_valid(pause_bit, keys)
-
 
 def hex_bounds(center, steps=None, radius=None):
     # Make a box that is (70m * step_limit * 2) + 70m away from the
