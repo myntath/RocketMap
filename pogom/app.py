@@ -210,6 +210,7 @@ class Pogom(Flask):
                                show_scan=scan_display
                                )
 
+    @requires_auth
     def raw_data(self):
         self.heartbeat[0] = now()
         args = get_args()
@@ -433,6 +434,7 @@ class Pogom(Flask):
             log.info('Changing next location: %s,%s', lat, lon)
             return self.loc()
 
+    @requires_auth
     def list_pokemon(self):
         # todo: Check if client is Android/iOS/Desktop for geolink, currently
         # only supports Android.
@@ -557,7 +559,8 @@ class Pogom(Flask):
         valid_input["sort"] = {"display": "Sort", "items": valid_sort}
         valid_input["order"] = {"display": "Order", "items": valid_order}
         return valid_input
- 
+
+    @requires_auth
     def get_stats(self):
         return render_template('statistics.html',
                                lat=self.current_location[0],

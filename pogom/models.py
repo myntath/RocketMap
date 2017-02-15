@@ -2502,7 +2502,7 @@ def drop_tables(db):
                     GymDetails, GymMember, GymPokemon, Trainer, MainWorker,
                     WorkerStatus, SpawnPoint, ScanSpawnPoint,
                     SpawnpointDetectionData, LocationAltitude,
-                    Token, Version, Account, BadScans], safe=True)
+                    Token, Account, BadScans], safe=True)
     db.close()
 
 
