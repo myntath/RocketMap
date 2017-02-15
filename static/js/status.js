@@ -5,7 +5,6 @@ var monthArray = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep',
 var rawDataIsLoading = false
 var statusPagePassword = false
 var groupByWorker = true
-var showHashKeys = true
 
 // Raw data updating
 var minUpdateDelay = 1000 // Minimum delay between updates (in ms).
@@ -173,8 +172,8 @@ function addhash(hash) {
         Peak
         </div>
        <div class="status_cell">
-         Expires at
-       </div>
+        Expires at
+        </div>
        <div class="status_cell">
          Last Modified
        </div>
@@ -372,11 +371,9 @@ $(document).ready(function () {
             updateStatus()
         }
     })
-
     $('#hashkey-switch').click(function () {
         $('div[id="hashrow_"]').toggle()
         showHashKeys = this.checked
-
         $('status_container .status_table').remove()
         if (statusPagePassword) {
             updateStatus()
