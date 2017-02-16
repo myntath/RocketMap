@@ -948,6 +948,7 @@ def search_worker_thread(args, account_queue, account_failures,
                 # request.
                 status['latitude'] = step_location[0]
                 status['longitude'] = step_location[1]
+                dbq.put((WorkerStatus, {0: WorkerStatus.db_format(status)}))
 
                 # Nothing back. Mark it up, sleep, carry on.
                 if not response_dict:
