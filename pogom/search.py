@@ -335,7 +335,14 @@ def worker_status_db_thread(threads_status, name, db_updates_queue):
                     'accounts_working': status['active_accounts'],
                     'accounts_captcha': status['accounts_captcha'],
                     'accounts_failed': status['accounts_failed'],
-                    'account_reserve': status['account_reserve']
+                    'account_reserve': status['account_reserve'],
+                    'success': status['success_total'],
+                    'fail': status['fail_total'],
+                    'empty': status['empty_total'],
+                    'skip': status['skip_total'],
+                    'captcha': status['captcha_total'],
+                    'start': status['starttime'],
+                    'elapsed': status['elapsed']
                 }
             elif status['type'] == 'Worker':
                 workers[status['username']] = WorkerStatus.db_format(
@@ -389,6 +396,7 @@ def search_overseer_thread(args, new_location_queue, pause_bit, heartb,
         'success_total': 0,
         'fail_total': 0,
         'empty_total': 0,
+        'elapsed': 0,
         'scheduler': args.scheduler,
         'scheduler_status': {'tth_found': 0}
     }
@@ -624,6 +632,7 @@ def get_stats_message(threadStatus):
     if elapsed == 0:
         elapsed = 1
 
+    overseer['elapsed'] = elapsed
     sph = overseer['success_total'] * 3600.0 / elapsed
     fph = overseer['fail_total'] * 3600.0 / elapsed
     eph = overseer['empty_total'] * 3600.0 / elapsed
@@ -635,7 +644,8 @@ def get_stats_message(threadStatus):
     message = ('Total active: {}  | Available: {}  | Captch\'d: {}  | On Hold: {} |  Success: {} ({:.1f}/hr) | ' +
                'Fails: {} ({:.1f}/hr) | Empties: {} ({:.1f}/hr) | ' +
                'Skips {} ({:.1f}/hr) | ' +
-               'Captchas: {} ({:.1f}/hr)|${:.5f}/hr|${:.3f}/mo').format(
+               'Captchas: {} ({:.1f}/hr) (${:.5f}/hr, ${:.3f}/mo) | ' +
+               'Elapsed: {:.1f}h ({}s)').format(
                    overseer['active_accounts'],
                    overseer['account_reserve'],
                    overseer['accounts_captcha'],
@@ -645,7 +655,7 @@ def get_stats_message(threadStatus):
                    overseer['empty_total'], eph,
                    overseer['skip_total'], skph,
                    overseer['captcha_total'], cph,
-                   ccost, cmonth)
+                   ccost, cmonth, elapsed / 3600.0, elapsed)
 
     return message
 

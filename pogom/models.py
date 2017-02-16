@@ -37,7 +37,7 @@ args = get_args()
 flaskDb = FlaskDB()
 cache = TTLCache(maxsize=100, ttl=60 * 5)
 
-db_schema_version = 13
+db_schema_version = 14
 
 
 class MyRetryDB(RetryOperationalError, PooledMySQLDatabase):
@@ -1242,6 +1242,13 @@ class MainWorker(BaseModel):
     accounts_captcha = IntegerField()
     accounts_failed = IntegerField()
     account_reserve = IntegerField()
+    success = IntegerField(default=0)
+    fail = IntegerField(default=0)
+    empty = IntegerField(default=0)
+    skip = IntegerField(default=0)
+    captcha = IntegerField(default=0)
+    start = IntegerField(default=0)
+    elapsed = IntegerField(default=0)
 
     @staticmethod
     def get_total_captchas():
@@ -2620,7 +2627,7 @@ def database_migrate(db, old_ver):
 
         db.drop_tables([ScanSpawnPoint])
 
-    if old_ver < 13:
+    if old_ver < 13 or old_ver < 14:
 
         db.drop_tables([WorkerStatus])
         db.drop_tables([MainWorker])
