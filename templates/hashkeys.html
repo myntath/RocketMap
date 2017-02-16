@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <title>Rocket Map - Status</title>
+    <title>Rocket Map - HashKey Status</title>
 
     <!-- Fav- & Apple-Touch-Icons -->
     <!-- Favicon -->
@@ -39,37 +39,7 @@
 </header>
 <nav id="nav">
   <div id="nav-accordion">
-    <h3>Status Settings</h3>
-    <div class="form-control switch-container">
-      <h3>Group by Workers</h3>
-      <div class="onoffswitch">
-        <input id="groupbyworker-switch" type="checkbox" name="groupbyworker-switch" class="onoffswitch-checkbox" checked>
-        <label class="onoffswitch-label" for="groupbyworker-switch">
-          <span class="switch-label" data-on="On" data-off="Off"></span>
-          <span class="switch-handle"></span>
-        </label>
-      </div>
-    </div>
-    <div class="form-control switch-container">
-     <h3>Show Workers</h3>
-     <div class="onoffswitch">
-       <input id="showworker-switch" type="checkbox" name="showworker-switch" class="onoffswitch-checkbox" checked>
-       <label class="onoffswitch-label" for="showworker-switch">
-         <span class="switch-label" data-on="On" data-off="Off"></span>
-         <span class="switch-handle"></span>
-       </label>
-     </div>
-   </div>
-   <div class="form-control switch-container">
-      <h3>Hash Key Status</h3>
-      <div class="onoffswitch">
-        <input id="hashkey-switch" type="checkbox" name="hashkey-switch" class="onoffswitch-checkbox" checked>
-        <label class="onoffswitch-label" for="hashkey-switch">
-          <span class="switch-label" data-on="On" data-off="Off"></span>
-          <span class="switch-handle"></span>
-        </label>
-      </div>
-    </div>
+    <h3>HashKey Status</h3>
   </div>
 </nav>
 <div class="spacing"></div>
@@ -81,7 +51,7 @@
         </form>
     </div>
 </div>
-<script src="{{ url_for('static', filename='dist/js/status.min.js').lstrip('/') }}"></script>
-<script src="{{ url_for('static', filename='dist/js/app.min.js').lstrip('/') }}"></script>
+<script src="{{ url_for('static', filename='js/hashkeys.js').lstrip('/') }}"></script>
+<script src="{{ url_for('static', filename='js/app.js').lstrip('/') }}"></script>
 </body>
 </html>

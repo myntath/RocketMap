@@ -63,6 +63,8 @@ class Pogom(Flask):
         self.route("/inject.js", methods=['GET'])(self.render_inject_js)
         self.route("/submit_token", methods=['POST'])(self.submit_token)
         self.route("/get_stats", methods=['GET'])(self.get_account_stats)
+        self.route("/hashkeys", methods=['GET'])(self.get_all)
+        self.route("/hashkeys", methods=['POST'])(self.post_all)
 
     def get_bookmarklet(self):
         return render_template('bookmarklet.html')
@@ -94,6 +96,7 @@ class Pogom(Flask):
         args = get_args()
         if args.status_page_password is None:
             abort(404)
+        return render_template('hashkeys.html')
 
     def post_all(self):
         args = get_args()
