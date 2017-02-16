@@ -65,8 +65,8 @@ function processHash(i, hashkey) {
 }
 
 function parseResult(result) {
-  $.each(result.HashKeys, processHash)
-    }
+    $.each(result.HashKeys, processHash)
+}
 
 /*
  * Tables
@@ -214,4 +214,4 @@ $(document).ready(function () {
             }
         })
     })
-  })
+})
