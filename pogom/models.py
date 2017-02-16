@@ -37,7 +37,7 @@ args = get_args()
 flaskDb = FlaskDB()
 cache = TTLCache(maxsize=100, ttl=60 * 5)
 
-db_schema_version = 14
+db_schema_version = 13
 
 
 class MyRetryDB(RetryOperationalError, PooledMySQLDatabase):
@@ -2305,7 +2305,7 @@ def clean_db_loop(args):
             # Remove expired HashKeys
             query = (HashKeys
                      .delete()
-                     .where(HashKeys.expires != HashKeys.expires))
+                     .where(HashKeys.expires < int(time.time())))
             query.execute()
 
             # If desired, clear old Pokemon spawns.

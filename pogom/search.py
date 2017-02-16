@@ -386,7 +386,7 @@ def search_overseer_thread(args, new_location_queue, pause_bit, heartb,
         'scheduler_status': {'tth_found': 0}
     }
 
-    # Create the key scheduler and overseer
+    # Create the key scheduler.
     if args.hash_key:
         log.info('Enabling hashing key scheduler...')
         key_scheduler = schedulers.KeyScheduler(args.hash_key)
