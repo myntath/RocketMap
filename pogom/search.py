@@ -727,7 +727,6 @@ def search_worker_thread(args, account_queue, account_failures,
             # Force storing of previous worker info to keep consistency
             if 'starttime' in status:
                 dbq.put((WorkerStatus, {0: WorkerStatus.db_format(status)}))
-                dbq.put((HashKeys))
             status['starttime'] = now()
 
             # Track per loop.
