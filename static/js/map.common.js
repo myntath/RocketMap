@@ -793,7 +793,7 @@ var pokemonSprites = {
     iconWidth: 65,
     iconHeight: 65,
     spriteWidth: 455,
-    spriteHeight: 1430,
+    spriteHeight: 2340,
     filename: 'static/icons-large-sprite.png',
     name: 'High-Res'
 }
