@@ -496,6 +496,9 @@ def search_overseer_thread(args, new_location_queue, pause_bit, heartb,
 
     stats_timer = 0
 
+    if arges.status_name == "Main":
+        writePause(0)
+
     # The real work starts here but will halt on pause_bit.set().
     while True:
 
