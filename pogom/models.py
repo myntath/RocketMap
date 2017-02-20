@@ -1103,12 +1103,19 @@ class MainWorker(BaseModel):
                                  fn.SUM(MainWorker.accounts_failed),
                                  fn.SUM(MainWorker.account_reserve))
                          .scalar(as_tuple=True))
+        account_stats_main = (MainWorker
+                         .select(fn.SUM(MainWorker.accounts_working),
+                                 fn.SUM(MainWorker.accounts_captcha),
+                                 fn.SUM(MainWorker.accounts_failed),
+                                 fn.SUM(MainWorker.account_reserve))
+                         .where(MainWorker.worker_name == "Main")
+                         .scalar(as_tuple=True))
         dict = {'working': 0, 'captcha': 0, 'failed': 0, 'available': 0}
         if account_stats[0] is not None:
             dict = {'working': int(account_stats[0]),
                     'captcha': int(account_stats[1]),
                     'failed': int(account_stats[2]),
-                    'available': int(account_stats[3])}
+                    'available': int(account_stats_main[3])}
 
         return dict
 
