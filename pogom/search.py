@@ -927,7 +927,7 @@ def search_worker_thread(args, account_queue, account_failures,
                         'Hash Key {} seems to be expired! {}'.format(key,
                                                                      repr(e)))
                     log.warning('Scanning Paused, please restart with' +
-                                'a valid Hash Key')
+                                'a valid Hash Key!')
 
                 # Only run this when it's the account's first login, after
                 # check_login().
