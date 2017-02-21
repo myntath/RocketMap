@@ -924,8 +924,8 @@ def search_worker_thread(args, account_queue, account_failures,
                 except BadHashRequestException as e:
                     pause_bit.set()
                     log.warning(
-                        'Hash Key {} EXPIRED YOU FOOL! {} '.format(key,
-                                                                   repr(e)))
+                        'Hash Key {} seems to be expired! {}'.format(key,
+                                                                     repr(e)))
                     log.warning('Scanning Paused, please restart with' +
                                 'a valid Hash Key')
 
