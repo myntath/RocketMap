@@ -37,6 +37,7 @@ from pgoapi import PGoApi
 from pgoapi.utilities import f2i
 from pgoapi import utilities as util
 from pgoapi.hash_server import HashServer
+from pgoapi.exceptions import BadHashRequestException
 
 from .models import parse_map, GymDetails, parse_gyms, MainWorker, \
     WorkerStatus, HashKeys
@@ -731,7 +732,6 @@ def search_worker_thread(args, account_queue, account_failures,
 
             # Track per loop.
             first_login = True
-
             # Make sure the scheduler is done for valid locations
             while not scheduler.ready:
                 time.sleep(1)
@@ -910,10 +910,24 @@ def search_worker_thread(args, account_queue, account_failures,
                     key = key_scheduler.next()
                     log.debug('Using key {} for this scan.'.format(key))
                     api.activate_hash_server(key)
+
                 # Ok, let's get started -- check our login status.
                 status['message'] = 'Logging in...'
                 check_login(args, account, api, step_location,
                             status['proxy_url'])
+                try:
+                    request = api.create_request()
+                    request.get_player(player_locale={
+                        'country': 'US', 'language': 'en',
+                        'timezone': 'America/Denver'})
+                    request.call()
+                except BadHashRequestException as e:
+                    pause_bit.set()
+                    log.warning(
+                        'Hash Key {} EXPIRED YOU FOOL! {} '.format(key,
+                                                                   repr(e)))
+                    log.warning('Scanning Paused, please restart with' +
+                                'a valid Hash Key')
 
                 # Only run this when it's the account's first login, after
                 # check_login().
@@ -978,14 +992,13 @@ def search_worker_thread(args, account_queue, account_failures,
                         break
 
                     if args.hash_key:
-                        key_instance = (
-                            key_scheduler.keys[key])
+                        key_instance = (key_scheduler.keys[key])
                         key_instance['remaining'] = HashServer.status.get(
-                            'remaining', 0)
+                                'remaining', 0)
 
                         if key_instance['maximum'] == 0:
-                            key_instance['maximum'] = HashServer.status.get(
-                                'maximum', 0)
+                            key_instance['maximum'] = (
+                                HashServer.status.get('maximum', 0))
 
                         peak = (
                             key_instance['maximum'] -
@@ -995,7 +1008,7 @@ def search_worker_thread(args, account_queue, account_failures,
 
                         if key_instance['expires'] == 'N/A':
                             expires = HashServer.status.get(
-                                'expiration', 'N/A')
+                                    'expiration', 'N/A')
 
                             if expires != 'N/A':
                                 expires = datetime.utcfromtimestamp(
@@ -1008,7 +1021,8 @@ def search_worker_thread(args, account_queue, account_failures,
                                 expires = expires.astimezone(to_zone)
                                 expires = expires.strftime(
                                     '%Y-%m-%d %H:%M:%S')
-                            key_instance['expires'] = expires
+
+                        key_instance['expires'] = expires
 
                     parsed = parse_map(args, response_dict, step_location,
                                        dbq, whq, api, scan_date)
