@@ -153,7 +153,7 @@ function parseResult(result) {
         $.each(result.workers, processWorker)
     }
     if (showHashTable) {
-        $.each(result.HashKeys, processHash)
+        $.each(result.hashkeys, processHash)
     }
 }
 
