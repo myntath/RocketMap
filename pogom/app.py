@@ -63,8 +63,8 @@ class Pogom(Flask):
         self.route("/inject.js", methods=['GET'])(self.render_inject_js)
         self.route("/submit_token", methods=['POST'])(self.submit_token)
         self.route("/get_stats", methods=['GET'])(self.get_account_stats)
-        self.route("/hashkeys", methods=['GET'])(self.get_all)
-        self.route("/hashkeys", methods=['POST'])(self.post_all)
+        self.route("/hashkeys", methods=['GET'])(self.get_hashkeys)
+        self.route("/hashkeys", methods=['POST'])(self.post_hashkeys)
 
     def get_bookmarklet(self):
         return render_template('bookmarklet.html')
@@ -92,13 +92,13 @@ class Pogom(Flask):
         r.headers.add('Access-Control-Allow-Origin', '*')
         return r
 
-    def get_all(self):
+    def get_hashkeys(self):
         args = get_args()
         if args.status_page_password is None:
             abort(404)
         return render_template('hashkeys.html')
 
-    def post_all(self):
+    def post_hashkeys(self):
         args = get_args()
         d = {}
         if args.status_page_password is None:
@@ -106,7 +106,7 @@ class Pogom(Flask):
 
         if request.form.get('password', None) == args.status_page_password:
             d['login'] = 'ok'
-            d['HashKeys'] = HashKeys.get_all()
+            d['hashkeys'] = HashKeys.get_all()
         else:
             d['login'] = 'failed'
         return jsonify(d)
@@ -565,7 +565,7 @@ class Pogom(Flask):
             d['login'] = 'ok'
             d['main_workers'] = MainWorker.get_all()
             d['workers'] = WorkerStatus.get_all()
-            d['HashKeys'] = HashKeys.get_all()
+            d['hashkeys'] = HashKeys.get_all()
         else:
             d['login'] = 'failed'
         return jsonify(d)
