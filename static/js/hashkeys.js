@@ -65,7 +65,7 @@ function processHash(i, hashkey) {
 }
 
 function parseResult(result) {
-    $.each(result.HashKeys, processHash)
+    $.each(result.hashkeys, processHash)
 }
 
 /*
