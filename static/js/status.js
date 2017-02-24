@@ -109,7 +109,7 @@ function processWorker(i, worker) {
 }
 
 function processHash(i, hashkey) {
-    var mainHashHashash = hashFnv32a(hashkey['key'], true)
+    var mainHashHash = hashFnv32a(hashkey['key'], true)
     mainHashHash = 'global'
     if ($('#hashtable_global').length === 0) {
         addhash('global')
