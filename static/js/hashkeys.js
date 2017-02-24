@@ -28,8 +28,7 @@ function addhashtable(mainHashHash) {
 }
 
 function processHash(i, hashkey) {
-    var hash = hashFnv32a(hashkey['key'], true)
-    var mainHashHash
+    var mainHashHash = hashFnv32a(hashkey['key'], true)
     mainHashHash = 'global'
     if ($('#hashtable_global').length === 0) {
         addhash('global')
