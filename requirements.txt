@@ -23,5 +23,5 @@ sphinx_rtd_theme==0.1.9
 requests==2.13.0
 requests-futures==0.9.7
 PySocks==1.5.6
-git+https://github.com/maddhatter/Flask-CacheBust.git@9dbb0d1b387cfc8cfffa2e6cbf16637d995706c3#egg=flask_cachebust
+git+https://github.com/maddhatter/Flask-CacheBust.git@38d940cc4f18b5fcb5687746294e0360640a107e#egg=flask_cachebust
 cachetools==2.0.0
