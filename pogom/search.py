@@ -915,19 +915,6 @@ def search_worker_thread(args, account_queue, account_failures,
                 status['message'] = 'Logging in...'
                 check_login(args, account, api, step_location,
                             status['proxy_url'])
-                try:
-                    request = api.create_request()
-                    request.get_player(player_locale={
-                        'country': 'US', 'language': 'en',
-                        'timezone': 'America/Denver'})
-                    request.call()
-                except BadHashRequestException as e:
-                    pause_bit.set()
-                    log.warning(
-                        'Hash Key {} seems to be expired! {}'.format(key,
-                                                                     repr(e)))
-                    log.warning('Scanning Paused, please restart with' +
-                                'a valid Hash Key!')
 
                 # Only run this when it's the account's first login, after
                 # check_login().
@@ -1022,7 +1009,7 @@ def search_worker_thread(args, account_queue, account_failures,
                                 expires = expires.strftime(
                                     '%Y-%m-%d %H:%M:%S')
 
-                        key_instance['expires'] = expires
+                            key_instance['expires'] = expires
 
                     parsed = parse_map(args, response_dict, step_location,
                                        dbq, whq, api, scan_date)
@@ -1042,8 +1029,8 @@ def search_worker_thread(args, account_queue, account_failures,
                     key_out = {}
                     key_out[0] = key_instance
                     key_out[0]['key'] = key
-                    HashKeys.upsert_keys(dbq, key_out)
-                    log.info(
+                    dbq.put((HashKeys, key_out))
+                    log.debug(
                             ('Hash Key {} has {}/{} RPM ' +
                              'left.').format(key,
                                              key_instance[
