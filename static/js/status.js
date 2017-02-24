@@ -57,18 +57,18 @@ function addWorker(mainWorkerHash, workerHash) {
     $(row).appendTo('#table_' + mainWorkerHash)
 }
 
-function addhashtable(mainWorkerHash, workerHash) {
+function addhashtable(mainHashHash) {
     var hashrow = `
-    <div id="hashrow_${workerHash}" class="status_row">
-      <div id="key_${workerHash}" class="status_cell"/>
-      <div id="maximum_${workerHash}" class="status_cell"/>
-      <div id="remaining_${workerHash}" class="status_cell"/>
-      <div id="peak_${workerHash}" class="status_cell"/>
-      <div id="expires_${workerHash}" class="status_cell"/>
-      <div id="last_updated_${workerHash}" class="status_cell"/>
+    <div id="hashrow_${mainHashHash}" class="status_row">
+      <div id="key_${mainHashHash}" class="status_cell"/>
+      <div id="maximum_${mainHashHash}" class="status_cell"/>
+      <div id="remaining_${mainHashHash}" class="status_cell"/>
+      <div id="peak_${mainHashHash}" class="status_cell"/>
+      <div id="expires_${mainHashHash}" class="status_cell"/>
+      <div id="last_updated_${mainHashHash}" class="status_cell"/>
     </div>
     `
-    $(hashrow).appendTo('#hashtable_' + mainWorkerHash)
+    $(hashrow).appendTo('#hashtable_' + mainHashHash)
 }
 
 function processWorker(i, worker) {
@@ -116,8 +116,8 @@ function processHash(i, hashkey) {
         addhash('global')
     }
 
-    if ($('#hashrow_' + hash).length === 0) {
-        addhashtable(mainHashHash, hash)
+    if ($('#hashrow_' + mainHashHash).length === 0) {
+        addhashtable(mainHashHash)
     }
 
     var lastModified = new Date(hashkey['last_updated'])
@@ -137,12 +137,12 @@ function processHash(i, hashkey) {
         monthArray[expires.getMonth()] + ' ' +
         expires.getFullYear()
 
-    $('#key_' + hash).html(hashkey['key'])
-    $('#maximum_' + hash).html(hashkey['maximum'])
-    $('#remaining_' + hash).html(hashkey['remaining'])
-    $('#peak_' + hash).html(hashkey['peak'])
-    $('#last_updated_' + hash).html(lastModified)
-    $('#expires_' + hash).html(expires)
+    $('#key_' + mainHashHash).html(hashkey['key'])
+    $('#maximum_' + mainHashHash).html(hashkey['maximum'])
+    $('#remaining_' + mainHashHash).html(hashkey['remaining'])
+    $('#peak_' + mainHashHash).html(hashkey['peak'])
+    $('#last_updated_' + mainHashHash).html(lastModified)
+    $('#expires_' + mainHashHash).html(expires)
 }
 
 function parseResult(result) {
