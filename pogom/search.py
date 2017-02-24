@@ -37,7 +37,6 @@ from pgoapi import PGoApi
 from pgoapi.utilities import f2i
 from pgoapi import utilities as util
 from pgoapi.hash_server import HashServer
-from pgoapi.exceptions import BadHashRequestException
 
 from .models import parse_map, GymDetails, parse_gyms, MainWorker, \
     WorkerStatus, HashKeys
