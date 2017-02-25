@@ -1674,21 +1674,6 @@ class HashKeys(BaseModel):
     expires = DateTimeField(null=True)
     last_updated = DateTimeField(default=datetime.utcnow)
 
-    @staticmethod
-    def get_by_key(key):
-        query = (HashKeys
-                 .select()
-                 .where(HashKeys.key == key)
-                 .dicts())
-
-        return query[0] if query else {
-            'maximum': 0,
-            'remaining': 0,
-            'peak': 0,
-            'expires': None,
-            'last_updated': None
-        }
-
 
 def hex_bounds(center, steps=None, radius=None):
     # Make a box that is (70m * step_limit * 2) + 70m away from the
