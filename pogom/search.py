@@ -28,7 +28,6 @@ import copy
 import requests
 
 from datetime import datetime
-from dateutil import tz
 from threading import Thread, Lock
 from queue import Queue, Empty
 from sets import Set
