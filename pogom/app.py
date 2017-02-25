@@ -63,8 +63,6 @@ class Pogom(Flask):
         self.route("/inject.js", methods=['GET'])(self.render_inject_js)
         self.route("/submit_token", methods=['POST'])(self.submit_token)
         self.route("/get_stats", methods=['GET'])(self.get_account_stats)
-        self.route("/hashkeys", methods=['GET'])(self.get_hashkeys)
-        self.route("/hashkeys", methods=['POST'])(self.post_hashkeys)
 
     def get_bookmarklet(self):
         args = get_args()
@@ -93,27 +91,6 @@ class Pogom(Flask):
         r = make_response(jsonify(**stats))
         r.headers.add('Access-Control-Allow-Origin', '*')
         return r
-
-    def get_hashkeys(self):
-        args = get_args()
-        if args.status_page_password is None:
-            abort(404)
-        return render_template('hashkeys.html')
-
-    def post_hashkeys(self):
-        args = get_args()
-        d = {}
-        if args.status_page_password is None:
-            abort(404)
-
-        if request.form.get('password', None) == args.status_page_password:
-            d['login'] = 'ok'
-            d['hashkeys'] = HashKeys.get_all()
-            for i in d['hashkeys']:
-                i.update({'key': i['key'][:-9] + '*'*9})
-        else:
-            d['login'] = 'failed'
-        return jsonify(d)
 
     def validate_request(self):
         if self._ip_is_blacklisted(request.remote_addr):
