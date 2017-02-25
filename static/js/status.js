@@ -57,15 +57,15 @@ function addWorker(mainWorkerHash, workerHash) {
     $(row).appendTo('#table_' + mainWorkerHash)
 }
 
-function addhashtable(mainHashHash) {
+function addhashtable(mainHashHash, keyHash) {
     var hashrow = `
-    <div id="hashrow_${mainHashHash}" class="status_row">
-      <div id="key_${mainHashHash}" class="status_cell"/>
-      <div id="maximum_${mainHashHash}" class="status_cell"/>
-      <div id="remaining_${mainHashHash}" class="status_cell"/>
-      <div id="peak_${mainHashHash}" class="status_cell"/>
-      <div id="expires_${mainHashHash}" class="status_cell"/>
-      <div id="last_updated_${mainHashHash}" class="status_cell"/>
+    <div id="hashrow_${keyHash}" class="status_row">
+      <div id="key_${keyHash}" class="status_cell"/>
+      <div id="maximum_${keyHash}" class="status_cell"/>
+      <div id="remaining_${keyHash}" class="status_cell"/>
+      <div id="peak_${keyHash}" class="status_cell"/>
+      <div id="expires_${keyHash}" class="status_cell"/>
+      <div id="last_updated_${keyHash}" class="status_cell"/>
     </div>
     `
     $(hashrow).appendTo('#hashtable_' + mainHashHash)
@@ -110,13 +110,14 @@ function processWorker(i, worker) {
 
 function processHash(i, hashkey) {
     var mainHashHash = hashFnv32a(hashkey['key'], true)
+    var keyHash = hashFnv32a(hashkey['key'], true)
     mainHashHash = 'global'
     if ($('#hashtable_global').length === 0) {
         addhash('global')
     }
 
-    if ($('#hashrow_' + mainHashHash).length === 0) {
-        addhashtable(mainHashHash)
+    if ($('#hashrow_' + keyHash).length === 0) {
+        addhashtable(mainHashHash, keyHash)
     }
 
     var lastModified = new Date(hashkey['last_updated'])
@@ -136,12 +137,12 @@ function processHash(i, hashkey) {
         monthArray[expires.getMonth()] + ' ' +
         expires.getFullYear()
 
-    $('#key_' + mainHashHash).html(hashkey['key'])
-    $('#maximum_' + mainHashHash).html(hashkey['maximum'])
-    $('#remaining_' + mainHashHash).html(hashkey['remaining'])
-    $('#peak_' + mainHashHash).html(hashkey['peak'])
-    $('#last_updated_' + mainHashHash).html(lastModified)
-    $('#expires_' + mainHashHash).html(expires)
+    $('#key_' + keyHash).html(hashkey['key'])
+    $('#maximum_' + keyHash).html(hashkey['maximum'])
+    $('#remaining_' + keyHash).html(hashkey['remaining'])
+    $('#peak_' + keyHash).html(hashkey['peak'])
+    $('#last_updated_' + keyHash).html(lastModified)
+    $('#expires_' + keyHash).html(expires)
 }
 
 function parseResult(result) {
@@ -159,9 +160,9 @@ function parseResult(result) {
 /*
  * Tables
  */
-function addhash(hash) {
+function addhash(mainHashHash) {
     var hashtable = `
-    <div class="status_table" id="hashtable_${hash}">
+    <div class="status_table" id="hashtable_${mainHashHash}">
      <div class="status_row header">
      <div class="status_cell">
        Hash Keys
