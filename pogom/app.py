@@ -109,6 +109,8 @@ class Pogom(Flask):
         if request.form.get('password', None) == args.status_page_password:
             d['login'] = 'ok'
             d['hashkeys'] = HashKeys.get_all()
+            b = [i.update(
+                        {'key': i['key'][:-9] + '*'*9}) for i in d['hashkeys']]
         else:
             d['login'] = 'failed'
         return jsonify(d)
@@ -568,6 +570,8 @@ class Pogom(Flask):
             d['main_workers'] = MainWorker.get_all()
             d['workers'] = WorkerStatus.get_all()
             d['hashkeys'] = HashKeys.get_all()
+            b = [i.update(
+                {'key': i['key'][:-9] + '*'*9}) for i in d['hashkeys']]
         else:
             d['login'] = 'failed'
         return jsonify(d)

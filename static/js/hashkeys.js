@@ -48,7 +48,7 @@ function processHash(i, hashkey) {
         lastModified.getFullYear()
 
 
-    var expires = new Date(hashkey['expires'])
+    var expires = new Date(hashkey['expires'] * 1000)
     expires = expires.getHours() + ':' +
         ('0' + expires.getMinutes()).slice(-2) + ':' +
         ('0' + expires.getSeconds()).slice(-2) + ' ' +

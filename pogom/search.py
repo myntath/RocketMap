@@ -1003,21 +1003,8 @@ def search_worker_thread(args, account_queue, account_failures,
                         key_instance['peak'] = peak
 
                         if key_instance['expires'] == 'N/A':
-                            expires = HashServer.status.get(
+                            key_instance['expires'] = HashServer.status.get(
                                     'expiration', 'N/A')
-                            if expires != 'N/A':
-                                expires = datetime.utcfromtimestamp(
-                                    int(expires))
-
-                                from_zone = tz.tzutc()
-                                to_zone = tz.tzlocal()
-
-                                expires = expires.replace(tzinfo=from_zone)
-                                expires = expires.astimezone(to_zone)
-                                expires = expires.strftime(
-                                    '%Y-%m-%d %H:%M:%S')
-
-                            key_instance['expires'] = expires
 
                     parsed = parse_map(args, response_dict, step_location,
                                        dbq, whq, api, scan_date)
