@@ -41,7 +41,7 @@ from pgoapi import utilities as util
 from pgoapi.hash_server import HashServer
 
 from .models import parse_map, GymDetails, parse_gyms, MainWorker, \
-    WorkerStatus, HashKeys
+                    WorkerStatus, HashKeys
 from .fakePogoApi import FakePogoApi
 from .utils import now, generate_device_info
 from .transform import get_new_coords, jitter_location
