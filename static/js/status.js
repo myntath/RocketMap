@@ -190,7 +190,7 @@ function addhash(mainHashHash) {
 
 function hashtableSort() {
     var hashtable = $(this).parents('.status_table').eq(0)
-    var hashrow = hashtable.find('.status_row:gt(0)').toArray().sort(comparehash($(this).index()))
+    var hashrow = hashtable.find('.status_row:gt(0)').toArray().sort(comparehashKeys($(this).index()))
     this.asc = !this.asc
     if (!this.asc) {
         hashrow = hashrow.reverse()
@@ -266,7 +266,7 @@ function compare(index) {
         return $.isNumeric(valA) && $.isNumeric(valB) ? valA - valB : valA.localeCompare(valB)
     }
 }
-function comparehash(index) {
+function comparehashKeys(index) {
     return function (a, b) {
         var valA = getHashtableValue(a, index)
         var valB = getHashtableValue(b, index)
