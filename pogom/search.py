@@ -359,8 +359,9 @@ def search_overseer_thread(args, new_location_queue, pause_bit, heartb,
     to prevent accounts from being cycled through too quickly.
     '''
     for i, account in enumerate(args.accounts):
-        Account.add_account(db_updates_queue, account['username'],
-                            account['password'], account['auth_service'])
+        if not args.accountdb:
+            Account.add_account(db_updates_queue, account['username'],
+                                account['password'], account['auth_service'])
         account_queue.put(account)
 
     '''
@@ -958,7 +959,7 @@ def search_worker_thread(args, account_queue, account_sets, account_failures,
                     status['fail'] += 1
                     consecutive_fails += 1
                     Account.update_accounts(dbq, account['username'],
-                                            True, False, False)
+                                            True, False, False, 0)
                     BadScans.add_bad_scan(account['username'], 'fail',
                                           step_location[0], step_location[1],
                                           args.status_name, dbq)
@@ -970,13 +971,17 @@ def search_worker_thread(args, account_queue, account_sets, account_failures,
                 # Got the response, check for captcha, parse it out, then send
                 # todo's to db/wh queues.
                 try:
+                    level = 0
+                    inventory_items = response_dict['responses']['GET_INVENTORY']['inventory_delta']['inventory_items']
+                    level = filter(lambda i: 'player_stats' in i['inventory_item_data'], inventory_items)
+                    level = level[0]['inventory_item_data']['player_stats']['level']
                     captcha = handle_captcha(args, status, api, account,
                                              account_failures,
                                              account_captchas, whq,
                                              response_dict, step_location)
                     if captcha is not None:
                         Account.update_accounts(dbq, account['username'],
-                                                False, False, True)
+                                                False, False, True, level)
                         BadScans.add_bad_scan(account['username'], 'captcha',
                                               step_location[0],
                                               step_location[1],
@@ -1002,12 +1007,12 @@ def search_worker_thread(args, account_queue, account_sets, account_failures,
                         status['success'] += 1
                         consecutive_noitems = 0
                         Account.update_accounts(dbq, account['username'],
-                                                False, False, False)
+                                                False, False, False, level)
                     else:
                         status['noitems'] += 1
                         consecutive_noitems += 1
                         Account.update_accounts(dbq, account['username'],
-                                                False, True, False)
+                                                False, True, False, level)
                         BadScans.add_bad_scan(account['username'], 'empty',
                                               step_location[0],
                                               step_location[1],
@@ -1030,7 +1035,8 @@ def search_worker_thread(args, account_queue, account_sets, account_failures,
                                                            step_location[1],
                                                            account['username'])
                     Account.update_accounts(dbq, account['username'],
-                                            True, False, False)
+                                            True, False, False, level)
+
                     BadScans.add_bad_scan(account['username'], 'fail',
                                           step_location[0], step_location[1],
                                           args.status_name, dbq)

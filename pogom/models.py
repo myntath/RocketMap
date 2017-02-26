@@ -478,11 +478,35 @@ class Account(BaseModel):
     total_empty = IntegerField(default=0)
     total_success = IntegerField(default=0)
     total_captcha = IntegerField(default=0)
+    level = IntegerField(default=0)
+    enabled = BooleanField(default=True, null=False)
     last_active = DateTimeField(default=datetime.utcnow())
 
     @classmethod
+    def enable_account(cls, name, db_update_queue):
+        account = cls.select().dicts().where(cls.name==name)
+        if account['enabled']:
+            return False
+        else:
+            account['enabled'] = True
+            db_update_queue.put((cls, account))
+            return True
+
+
+    @classmethod
+    def disable_account(cls, name, db_update_queue):
+        account = cls.select().dicts().where(cls.name==name)
+        if not account['enabled']:
+            return False
+        else:
+            account['enabled'] = False
+            db_update_queue.put((cls, account))
+            return True
+        
+
+    @classmethod
     def get_all_stats(cls):
-        raw = [m for m in Account.select().dicts()]
+        raw = [m for m in cls.select().dicts()]
         for i in range(0, len(raw)):
 
             if raw[i]['total_scans'] == 0:
@@ -510,17 +534,7 @@ class Account(BaseModel):
         return raw
 
     @staticmethod
-    def get_accounts():
-        query = Account.select().dicts()
-        return query
-
-    @staticmethod
-    def get_account_name(name):
-        query = Account.select().where(Account.name == name).dicts()
-        return query
-
-    @staticmethod
-    def update_accounts(db_update_queue, name, fail, empty, captcha):
+    def update_accounts(db_update_queue, name, fail, empty, captcha, level):
 
         # check account exists
         query = (Account.select().where(Account.name == name).dicts())
@@ -539,6 +553,10 @@ class Account(BaseModel):
         if (fail and empty) or (fail and captcha) or (captcha and empty):
             log.error('Scan should not have multiple fail, empty or captcha')
             return False
+
+        # set level
+        if level != 0:
+            result[0]['level'] = level 
 
         # add 1 to scans
         result[0]['total_scans'] += 1
