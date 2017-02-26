@@ -24,6 +24,7 @@ function addWorker(mainWorkerHash, accountHash) {
        <div id="captcha_rate_${accountHash}" class="status_cell"/>
        <div id="total_success_${accountHash}"  class="status_cell"/>
        <div id="success_rate_${accountHash}"  class="status_cell"/>
+       <div id="level_${accountHash}" class= "status_cell"/>
        <div id="lastmod_${accountHash}"  class="status_cell"/>
      </div>
    `
@@ -44,12 +45,11 @@ function processAccount(i, account) {
     }
 
     var lastModified = new Date(account['last_active'])
-    lastModified = lastModified.getHours() + ':' +
+    lastModified = lastModified.getFullYear() + '/' +
+        lastModified.getMonth() + '/' + lastModified.getDate() + ' ' + 
+        lastModified.getHours() + ':' +
         ('0' + lastModified.getMinutes()).slice(-2) + ':' +
-        ('0' + lastModified.getSeconds()).slice(-2) + ' ' +
-        lastModified.getDate() + ' ' +
-        monthArray[lastModified.getMonth()] + ' ' +
-        lastModified.getFullYear()
+        ('0' + lastModified.getSeconds()).slice(-2)
 
     $('#name_' + hash).html(account['name'])
     $('#password_' + hash).html(account['password'])
@@ -63,6 +63,7 @@ function processAccount(i, account) {
     $('#lastmod_' + hash).html(lastModified)
     $('#total_success_' + hash).html(account['total_success'])
     $('#success_rate_' + hash).html(account['success_rate'])
+    $('#level_' + hash).html(account['level'])
     $('#total_captcha_' + hash).html(account['total_captcha'])
 }
 
@@ -113,6 +114,9 @@ function addTable(hash) {
          </div>
          <div class="status_cell">
            Success %
+         </div>
+         <div class="status_cell">
+           Level
          </div>
          <div class="status_cell">
            Last Used
