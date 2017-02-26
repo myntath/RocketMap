@@ -999,7 +999,8 @@ def search_worker_thread(args, account_queue, account_failures,
                             key_instance['maximum'] -
                             key_instance['remaining'])
 
-                        key_instance['peak'] = peak
+                        if key_instance['peak'] < peak:
+                            key_instance['peak'] = peak
 
                         if key_instance['expires'] == 'N/A':
                             key_instance['expires'] = HashServer.status.get(
