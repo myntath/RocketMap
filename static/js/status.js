@@ -57,7 +57,7 @@ function addWorker(mainWorkerHash, workerHash) {
     $(row).appendTo('#table_' + mainWorkerHash)
 }
 
-function addhashtable(mainHashHash, keyHash) {
+function addhashtable(mainKeyHash, keyHash) {
     var hashrow = `
     <div id="hashrow_${keyHash}" class="status_row">
       <div id="key_${keyHash}" class="status_cell"/>
@@ -68,7 +68,7 @@ function addhashtable(mainHashHash, keyHash) {
       <div id="last_updated_${keyHash}" class="status_cell"/>
     </div>
     `
-    $(hashrow).appendTo('#hashtable_' + mainHashHash)
+    $(hashrow).appendTo('#hashtable_' + mainKeyHash)
 }
 
 function processWorker(i, worker) {
@@ -108,16 +108,16 @@ function processWorker(i, worker) {
     $('#message_' + hash).html(worker['message'])
 }
 
-function processHash(i, hashkey) {
-    var mainHashHash = hashFnv32a(hashkey['key'], true)
+function processHashKeys(i, hashkey) {
+    var mainKeyHash = hashFnv32a(hashkey['key'], true)
     var keyHash = hashFnv32a(hashkey['key'], true)
-    mainHashHash = 'global'
+    mainKeyHash = 'global'
     if ($('#hashtable_global').length === 0) {
         addhash('global')
     }
 
     if ($('#hashrow_' + keyHash).length === 0) {
-        addhashtable(mainHashHash, keyHash)
+        addhashtable(mainKeyHash, keyHash)
     }
 
     var lastModified = new Date(hashkey['last_updated'])
@@ -152,16 +152,16 @@ function parseResult(result) {
         $.each(result.workers, processWorker)
     }
     if (showHashTable) {
-        $.each(result.hashkeys, processHash)
+        $.each(result.hashkeys, processHashKeys)
     }
 }
 
 /*
  * Tables
  */
-function addhash(mainHashHash) {
+function addhash(mainKeyHash) {
     var hashtable = `
-    <div class="status_table" id="hashtable_${mainHashHash}">
+    <div class="status_table" id="hashtable_${mainKeyHash}">
      <div class="status_row header">
      <div class="status_cell">
        Hash Keys
