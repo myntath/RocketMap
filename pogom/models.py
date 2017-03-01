@@ -510,7 +510,7 @@ class Account(BaseModel):
         raw = [m for m in cls.select().dicts()]
         for i in range(0, len(raw)):
 
-            raw.pop('password', None)
+            raw[i].pop('password', None)
 
             if raw[i]['total_scans'] == 0:
                 raw[i]['fail_rate'] = '0'
