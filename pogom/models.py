@@ -1330,6 +1330,7 @@ class WorkerStatus(BaseModel):
                          (datetime.utcnow() - timedelta(minutes=5))))
                  .order_by(WorkerStatus.username)
                  .dicts())
+
         status = []
         for s in query:
             status.append(s)
@@ -1936,10 +1937,12 @@ def parse_map(args, map_dict, step_location, db_update_queue, wh_update_queue,
                  .where((Pokemon.disappear_time > datetime.utcnow()) &
                         (Pokemon.encounter_id << encounter_ids))
                  .dicts())
+
         # Store all encounter_ids and spawnpoint_ids for the Pokemon in query.
         # All of that is needed to make sure it's unique.
         encountered_pokemon = [
             (p['encounter_id'], p['spawnpoint_id']) for p in query]
+
         for p in wild_pokemon:
 
             sp = SpawnPoint.get_by_id(p['spawn_point_id'], p[

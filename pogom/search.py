@@ -369,7 +369,7 @@ def search_overseer_thread(args, new_location_queue, pause_bit, heartb,
             Account.add_account(db_updates_queue, account['username'],
                                 account['password'], account['auth_service'])
         account_queue.put(account)
- 
+
     # Create a list for failed accounts.
     account_failures = []
     # Create a double-ended queue for captcha'd accounts
