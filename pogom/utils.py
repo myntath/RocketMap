@@ -442,7 +442,7 @@ def get_args():
 
         if args.accountdb and args.accountcsv:
             errors.append('You selected to load accounts from both csv ' +
-                          'and database. Please select only one source.') 
+                          'and database. Please select only one source.')
         if args.accountdb:
 
             # can't seem to import models here so add fake account

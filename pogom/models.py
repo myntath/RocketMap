@@ -475,10 +475,9 @@ class Account(BaseModel):
     enabled = BooleanField(default=True, null=False)
     last_active = DateTimeField(default=datetime.utcnow())
 
-
     @classmethod
     def enable_account(cls, name, db_update_queue):
-        account = cls.select().dicts().where(cls.name==name)
+        account = cls.select().dicts().where(cls.name == name)
         if account['enabled']:
             return False
         else:
@@ -486,17 +485,15 @@ class Account(BaseModel):
             db_update_queue.put((cls, account))
             return True
 
-
     @classmethod
     def disable_account(cls, name, db_update_queue):
-        account = cls.select().dicts().where(cls.name==name)
+        account = cls.select().dicts().where(cls.name == name)
         if not account['enabled']:
             return False
         else:
             account['enabled'] = False
             db_update_queue.put((cls, account))
             return True
-        
 
     @classmethod
     def get_all_stats(cls):
@@ -552,7 +549,7 @@ class Account(BaseModel):
 
         # set level
         if level != 0:
-            result[0]['level'] = level 
+            result[0]['level'] = level
 
         # add 1 to scans
         result[0]['total_scans'] += 1

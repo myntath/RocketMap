@@ -982,9 +982,19 @@ def search_worker_thread(args, account_queue, account_failures,
                 # todo's to db/wh queues.
                 try:
                     level = 0
-                    inventory_items = response_dict['responses']['GET_INVENTORY']['inventory_delta']['inventory_items']
-                    level = filter(lambda i: 'player_stats' in i['inventory_item_data'], inventory_items)
-                    level = level[0]['inventory_item_data']['player_stats']['level']
+                    inventory_items = (response_dict
+                                       .get('responses')
+                                       .get('GET_INVENTORY')
+                                       .get('inventory_delta')
+                                       .get('inventory_items'))
+                    level = filter(lambda i:
+                                   'player_stats' in i['inventory_item_data'],
+                                   inventory_items)
+                    level = (level[0]
+                             .get('inventory_item_data')
+                             .get('player_stats')
+                             .get('level'))
+                    log.error(level)
                     captcha = handle_captcha(args, status, api, account,
                                              account_failures,
                                              account_captchas, whq,
