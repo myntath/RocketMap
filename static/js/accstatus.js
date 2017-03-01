@@ -1,6 +1,3 @@
-/* Shared */
-var monthArray = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec']
-
 /* Main stats page */
 var rawDataIsLoading = false
 var statusPagePassword = false
@@ -45,7 +42,7 @@ function processAccount(i, account) {
 
     var lastModified = new Date(account['last_active'])
     lastModified = lastModified.getFullYear() + '/' +
-        lastModified.getMonth() + '/' + lastModified.getDate() + ' ' + 
+        lastModified.getMonth() + '/' + lastModified.getDate() + ' ' +
         lastModified.getHours() + ':' +
         ('0' + lastModified.getMinutes()).slice(-2) + ':' +
         ('0' + lastModified.getSeconds()).slice(-2)
