@@ -13,7 +13,6 @@ function addWorker(mainWorkerHash, accountHash) {
     var row = `
      <div id="row_${accountHash}" class="status_row">
        <div id="name_${accountHash}" class="status_cell"/>
-       <div id="password_${accountHash}"  class="status_cell"/>
        <div id="login_type_${accountHash}"     class="status_cell"/>
        <div id="total_scans_${accountHash}"  class="status_cell"/>
        <div id="total_fails_${accountHash}"     class="status_cell"/>
@@ -52,7 +51,6 @@ function processAccount(i, account) {
         ('0' + lastModified.getSeconds()).slice(-2)
 
     $('#name_' + hash).html(account['name'])
-    $('#password_' + hash).html(account['password'])
     $('#login_type_' + hash).html(account['login_type'])
     $('#total_scans_' + hash).html(account['total_scans'])
     $('#total_fails_' + hash).html(account['total_fails'])
@@ -81,9 +79,6 @@ function addTable(hash) {
        <div class="status_row header">
          <div class="status_cell">
            Username
-         </div>
-         <div class="status_cell">
-           Password
          </div>
          <div class="status_cell">
            Type
