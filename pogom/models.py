@@ -1674,7 +1674,7 @@ class HashKeys(BaseModel):
     maximum = IntegerField(default=0)
     remaining = IntegerField(default=0)
     peak = IntegerField(default=0)
-    expires = DateTimeField(null=True, default=0)
+    expires = DateTimeField(null=True)
     last_updated = DateTimeField(default=datetime.utcnow)
 
 

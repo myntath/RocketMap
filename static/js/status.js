@@ -128,7 +128,7 @@ function processHashKeys(i, hashkey) {
         monthArray[lastModified.getMonth()] + ' ' +
         lastModified.getFullYear()
 
-    var expires = new Date(hashkey['expires'] * 1000)
+    var expires = new Date(hashkey['expires'])
     expires = expires.getHours() + ':' +
         ('0' + expires.getMinutes()).slice(-2) + ':' +
         ('0' + expires.getSeconds()).slice(-2) + ' ' +
