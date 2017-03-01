@@ -482,6 +482,7 @@ class Account(BaseModel):
     enabled = BooleanField(default=True, null=False)
     last_active = DateTimeField(default=datetime.utcnow())
 
+
     @classmethod
     def enable_account(cls, name, db_update_queue):
         account = cls.select().dicts().where(cls.name==name)
@@ -508,6 +509,9 @@ class Account(BaseModel):
     def get_all_stats(cls):
         raw = [m for m in cls.select().dicts()]
         for i in range(0, len(raw)):
+
+            # Remove the below line, at your own risk to show passwords
+            raw[i]['password'] = '**********'
 
             if raw[i]['total_scans'] == 0:
                 raw[i]['fail_rate'] = '0'
