@@ -18,7 +18,6 @@ from s2sphere import CellId, LatLng
 
 from . import config
 
-
 log = logging.getLogger(__name__)
 
 
