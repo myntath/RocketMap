@@ -1002,15 +1002,10 @@ def search_worker_thread(args, account_queue, account_failures,
                         if key_instance['peak'] < peak:
                             key_instance['peak'] = peak
 
-                        if key_instance['expires'] == 'N/A':
-                            expires = HashServer.status.get(
-                                 'expiration', 'N/A')
-
-                            if expires != 'N/A':
-                                expires = datetime.utcfromtimestamp(
-                                    int(expires))
-
-                            key_instance['expires'] = expires
+                        expires = HashServer.status.get('expiration', 0)
+                        if expires > 0:
+                            key_instance['expires'] = (
+                                datetime.utcfromtimestamp(expires))
 
                     parsed = parse_map(args, response_dict, step_location,
                                        dbq, whq, api, scan_date)
