@@ -1002,9 +1002,9 @@ def search_worker_thread(args, account_queue, account_failures,
                         if key_instance['peak'] < peak:
                             key_instance['peak'] = peak
 
-                        if key_instance['expires'] == 'N/A':
+                        if key_instance['expires'] == 0:
                             key_instance['expires'] = HashServer.status.get(
-                                    'expiration', 'N/A')
+                                    'expiration')
 
                     parsed = parse_map(args, response_dict, step_location,
                                        dbq, whq, api, scan_date)
