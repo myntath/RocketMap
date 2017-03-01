@@ -2298,8 +2298,7 @@ def clean_db_loop(args):
             query = (HashKeys
                      .delete()
                      .where(HashKeys.expires <
-                            (datetime.utcfromtimestamp(int(time.time())) +
-                             (timedelta(days=1)))))
+                            (datetime.utcnow() + timedelta(days=1))))
             query.execute()
 
             # If desired, clear old Pokemon spawns.
