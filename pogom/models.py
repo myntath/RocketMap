@@ -482,6 +482,7 @@ class Account(BaseModel):
     enabled = BooleanField(default=True, null=False)
     last_active = DateTimeField(default=datetime.utcnow())
 
+
     @classmethod
     def enable_account(cls, name, db_update_queue):
         account = cls.select().dicts().where(cls.name == name)
