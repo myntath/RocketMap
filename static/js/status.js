@@ -266,6 +266,7 @@ function compare(index) {
         return $.isNumeric(valA) && $.isNumeric(valB) ? valA - valB : valA.localeCompare(valB)
     }
 }
+
 function compareHashTable(index) {
     return function (a, b) {
         var valA = getHashtableValue(a, index)
