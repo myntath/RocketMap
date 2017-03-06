@@ -1672,10 +1672,38 @@ class Token(flaskDb.Model):
 class HashKeys(BaseModel):
     key = CharField(primary_key=True, max_length=20)
     maximum = IntegerField(default=0)
-    remaining = IntegerField(default=0)
     peak = IntegerField(default=0)
     expires = DateTimeField(null=True)
     last_updated = DateTimeField(default=datetime.utcnow)
+
+    @staticmethod
+    def db_format(hashkey, name='hashkey_db'):
+        return {'key': hashkey['key'],
+                'maximum': hashkey['maximum'],
+                'peak': hashkey['peak'],
+                'expires': hashkey['expires'],
+                'last_updated': datetime.utcnow()
+                }
+
+    @staticmethod
+    def get_by_key(key):
+        query = (HashKeys
+                 .select()
+                 .where(HashKeys.key == key)
+                 .dicts())
+
+        return query[0] if query else {
+            'maximum': 0,
+            'peak': 0,
+            'expires': None,
+            'last_updated': None
+        }
+
+        hashkey = []
+        for s in query:
+            hashkey.append(s)
+
+        return hashkey
 
 
 def hex_bounds(center, steps=None, radius=None):

@@ -120,13 +120,13 @@ function processHashKeys(i, hashkey) {
         addhashtable(mainKeyHash, keyHash)
     }
 
-    var lastModified = new Date(hashkey['last_updated'])
-    lastModified = lastModified.getHours() + ':' +
-        ('0' + lastModified.getMinutes()).slice(-2) + ':' +
-        ('0' + lastModified.getSeconds()).slice(-2) + ' ' +
-        lastModified.getDate() + ' ' +
-        monthArray[lastModified.getMonth()] + ' ' +
-        lastModified.getFullYear()
+    var lastUpdated = new Date(hashkey['last_updated'])
+    lastUpdated = lastUpdated.getHours() + ':' +
+        ('0' + lastUpdated.getMinutes()).slice(-2) + ':' +
+        ('0' + lastUpdated.getSeconds()).slice(-2) + ' ' +
+        lastUpdated.getDate() + ' ' +
+        monthArray[lastUpdated.getMonth()] + ' ' +
+        lastUpdated.getFullYear()
 
     var expires = new Date(hashkey['expires'])
     expires = expires.getHours() + ':' +
@@ -140,7 +140,7 @@ function processHashKeys(i, hashkey) {
     $('#maximum_' + keyHash).html(hashkey['maximum'])
     $('#remaining_' + keyHash).html(hashkey['remaining'])
     $('#peak_' + keyHash).html(hashkey['peak'])
-    $('#last_updated_' + keyHash).html(lastModified)
+    $('#last_updated_' + keyHash).html(lastUpdated)
     $('#expires_' + keyHash).html(expires)
 }
 

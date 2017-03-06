@@ -989,7 +989,7 @@ def search_worker_thread(args, account_queue, account_failures,
                     if args.hash_key:
                         key_instance = key_scheduler.keys[key]
                         key_instance['remaining'] = HashServer.status.get(
-                                'remaining', 0)
+                            'remaining', 0)
 
                         key_instance['maximum'] = (
                             HashServer.status.get('maximum', 0))
@@ -1021,10 +1021,12 @@ def search_worker_thread(args, account_queue, account_failures,
                         step_location[0], step_location[1],
                         parsed['count'])
                     log.debug(status['message'])
-                    key_output = {}
-                    key_output[0] = key_instance
-                    key_output[0]['key'] = key
-                    dbq.put((HashKeys, key_output))
+                    hashkey = HashKeys.get_by_key(key)
+                    hashkey['key'] = key
+                    hashkey['maximum'] = key_instance['maximum']
+                    hashkey['peak'] = peak
+                    hashkey['expires'] = key_instance['expires']
+                    dbq.put((HashKeys, {0: HashKeys.db_format(hashkey)}))
                     log.debug(
                             ('Hash key {} has {}/{} RPM ' +
                              'left.').format(key,
