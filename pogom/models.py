@@ -32,13 +32,14 @@ from .utils import get_pokemon_name, get_pokemon_rarity, get_pokemon_types, \
     get_move_name, get_move_damage, get_move_energy, get_move_type
 from .transform import transform_from_wgs_to_gcj, get_new_coords
 from .customLog import printPokemon
+
 log = logging.getLogger(__name__)
 
 args = get_args()
 flaskDb = FlaskDB()
 cache = TTLCache(maxsize=100, ttl=60 * 5)
 
-db_schema_version = 16
+db_schema_version = 17
 
 
 class MyRetryDB(RetryOperationalError, PooledMySQLDatabase):
@@ -478,7 +479,7 @@ class Account(BaseModel):
     def get_all_stats(cls):
         results = [m for m in Account.select().dicts()]
         for i in range(0, len(results)):
-
+            results[i].pop('password', None)
             if results[i]['total_scans'] == 0:
                 results[i]['fail_rate'] = '0'
                 results[i]['empty_rate'] = '0'
@@ -1017,14 +1018,14 @@ class ScannedLocation(BaseModel):
 
         d = {}
         for sl in list(query):
-            key = "{},{}".format(sl['latitude'], sl['longitude'])
+            key = "{},{}".format(round(sl['latitude'], 7), round(sl['longitude'], 7))
             d[key] = sl
 
         return d
 
     @classmethod
     def find_in_locs(cls, loc, locs):
-        key = "{},{}".format(loc[0], loc[1])
+        key = "{},{}".format(round(loc[0],7), round(loc[1],7))
         return locs[key] if key in locs else cls.new_loc(loc)
 
     # Return value of a particular scan from loc, or default dict if not found.
@@ -1109,7 +1110,7 @@ class ScannedLocation(BaseModel):
         s = cls.find_in_locs(scan['loc'], scanned_locations)
         if s['done']:
             return []
-
+        
         max = 3600 * 2 + 250  # Greater than maximum possible value.
         min = {'end': max}
 
@@ -1665,7 +1666,6 @@ class SpawnpointDetectionData(BaseModel):
                       if query[i + 1]['scan_time'] - query[i]['scan_time'] <
                       timedelta(hours=1)
                       ]
-
         start_end_list = []
         for s in sight_list:
             if s['same']:
@@ -2665,7 +2665,7 @@ def database_migrate(db, old_ver):
                                 IntegerField(null=True, default=0))
         )
 
-    if old_ver < 15:
+    if old_ver < 16:
         # we don't have to touch sqlite because it has REAL and INTEGER only
         if args.db_type == 'mysql':
             db.execute_sql('ALTER TABLE `pokemon` '
