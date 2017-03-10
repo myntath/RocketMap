@@ -546,9 +546,10 @@ class Pogom(Flask):
             d['login'] = 'ok'
             d['main_workers'] = MainWorker.get_all()
             d['workers'] = WorkerStatus.get_all()
-            d['hashkeys'] = HashKeys.get_all()
-            for i in d['hashkeys']:
-                i.update({'key': i['key'][:-9] + '*'*9})
+            hashkeys = HashKeys.get_all()
+            for i, s in enumerate(hashkeys):
+                hashkeys[i]['key'] = s['key'][:-9] + '*'*9
+            d['hashkeys'] = hashkeys
         else:
             d['login'] = 'failed'
         return jsonify(d)

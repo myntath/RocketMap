@@ -1696,7 +1696,7 @@ class HashKeys(BaseModel):
 
         return query[0] if query else {
             'maximum': 0,
-            'avarage': 0,
+            'average': 0,
             'peak': 0,
             'expires': None,
             'last_updated': None
