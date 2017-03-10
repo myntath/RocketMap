@@ -593,11 +593,13 @@ class Account(BaseModel):
             return False
 
         # add account
-        account = {0:
-                      {'name': name,
-                      'password': password,
-                      'login_type': account_type}
-                  }
+        account = {
+            0: {
+                'name': name,
+                'password': password,
+                'login_type': account_type
+            }
+        }
         db_update_queue.put((Account, account))
         log.info('Added account: {}'.format(name))
 
