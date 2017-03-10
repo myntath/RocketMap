@@ -1672,6 +1672,7 @@ class Token(flaskDb.Model):
 class HashKeys(BaseModel):
     key = CharField(primary_key=True, max_length=20)
     maximum = IntegerField(default=0)
+    average = IntegerField(default=0)
     peak = IntegerField(default=0)
     expires = DateTimeField(null=True)
     last_updated = DateTimeField(default=datetime.utcnow)
@@ -1680,6 +1681,7 @@ class HashKeys(BaseModel):
     def db_format(hashkey, name='hashkey_db'):
         return {'key': hashkey['key'],
                 'maximum': hashkey['maximum'],
+                'average': hashkey['average'],
                 'peak': hashkey['peak'],
                 'expires': hashkey['expires'],
                 'last_updated': datetime.utcnow()
@@ -1694,6 +1696,7 @@ class HashKeys(BaseModel):
 
         return query[0] if query else {
             'maximum': 0,
+            'avarage': 0,
             'peak': 0,
             'expires': None,
             'last_updated': None

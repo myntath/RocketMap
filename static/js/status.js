@@ -62,7 +62,7 @@ function addhashtable(mainKeyHash, keyHash) {
     <div id="hashrow_${keyHash}" class="status_row">
       <div id="key_${keyHash}" class="status_cell"/>
       <div id="maximum_${keyHash}" class="status_cell"/>
-      <div id="remaining_${keyHash}" class="status_cell"/>
+      <div id="average_${keyHash}" class="status_cell"/>
       <div id="peak_${keyHash}" class="status_cell"/>
       <div id="expires_${keyHash}" class="status_cell"/>
       <div id="last_updated_${keyHash}" class="status_cell"/>
@@ -138,7 +138,7 @@ function processHashKeys(i, hashkey) {
 
     $('#key_' + keyHash).html(hashkey['key'])
     $('#maximum_' + keyHash).html(hashkey['maximum'])
-    $('#remaining_' + keyHash).html(hashkey['remaining'])
+    $('#average_' + keyHash).html(hashkey['average'])
     $('#peak_' + keyHash).html(hashkey['peak'])
     $('#last_updated_' + keyHash).html(lastUpdated)
     $('#expires_' + keyHash).html(expires)
@@ -170,7 +170,7 @@ function addhash(mainKeyHash) {
         Maximum RPM
       </div>
       <div class="status_cell">
-        RPM Left
+        Average Use Per Minute
         </div>
       <div class="status_cell">
         Peak
