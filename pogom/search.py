@@ -1006,8 +1006,6 @@ def search_worker_thread(args, account_queue, account_failures,
                             elapsed = 1
 
                         average = key_instance['peak'] * 60.0 / elapsed
-                        if hashkey['average'] < average:
-                            hashkey['average'] = average
 
                         expires = HashServer.status.get('expiration', 0)
 
@@ -1033,6 +1031,9 @@ def search_worker_thread(args, account_queue, account_failures,
                     hashkey = HashKeys.get_by_key(key)
                     hashkey['key'] = key_scheduler.keys[key]['key']
                     hashkey['maximum'] = key_instance['maximum']
+                    hashkey['average'] = average
+                    if hashkey['average'] < average:
+                        hashkey['average'] = average
                     hashkey['peak'] = key_instance['peak']
                     hashkey['expires'] = key_scheduler.keys[key]['expires']
                     dbq.put((HashKeys, {0: HashKeys.db_format(hashkey)}))
