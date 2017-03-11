@@ -738,6 +738,7 @@ def search_worker_thread(args, account_queue, account_failures,
             if 'starttime' in status:
                 dbq.put((WorkerStatus, {0: WorkerStatus.db_format(status)}))
             status['starttime'] = now()
+            starttime = now()
 
             # Track per loop.
             first_login = True
@@ -1001,7 +1002,7 @@ def search_worker_thread(args, account_queue, account_failures,
                         if key_instance['peak'] < peak:
                             key_instance['peak'] = peak
 
-                        elapsed = now() - status['starttime']
+                        elapsed = now() - starttime
                         if elapsed == 0:
                             elapsed = 1
 
