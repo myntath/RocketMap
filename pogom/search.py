@@ -1002,6 +1002,10 @@ def search_worker_thread(args, account_queue, account_failures,
                         if key_instance['peak'] < peak:
                             key_instance['peak'] = peak
 
+                        elapsed = now() - starttime
+                        if elapsed == 0:
+                            elapsed = 1
+
                         average = key_instance['peak'] * 60.0 / elapsed
 
                         expires = HashServer.status.get('expiration', 0)
