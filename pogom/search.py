@@ -1002,10 +1002,6 @@ def search_worker_thread(args, account_queue, account_failures,
                         if key_instance['peak'] < peak:
                             key_instance['peak'] = peak
 
-                        elapsed = now() - starttime
-                        if elapsed == 0:
-                            elapsed = 1
-
                         average = key_instance['peak'] * 60.0 / elapsed
 
                         expires = HashServer.status.get('expiration', 0)
@@ -1029,15 +1025,10 @@ def search_worker_thread(args, account_queue, account_failures,
                         step_location[0], step_location[1],
                         parsed['count'])
                     log.debug(status['message'])
-                    hashkey = HashKeys.get_by_key(key)
-                    hashkey['key'] = key_scheduler.keys[key]['key']
-                    hashkey['maximum'] = key_instance['maximum']
-                    hashkey['average'] = average
-                    if hashkey['average'] < average:
-                        hashkey['average'] = average
-                    hashkey['peak'] = key_instance['peak']
-                    hashkey['expires'] = key_scheduler.keys[key]['expires']
-                    dbq.put((HashKeys, {0: HashKeys.db_format(hashkey)}))
+                    hashkeys = {}
+                    hashkeys[0] = key_instance
+                    hashkeys[0]['key'] = key
+                    dbq.put((HashKeys, hashkeys))
                     log.debug(
                             ('Hash key {} has {}/{} RPM ' +
                              'left.').format(key,

@@ -59,7 +59,7 @@ from operator import itemgetter
 from datetime import datetime, timedelta
 from .transform import get_new_coords
 from .models import (hex_bounds, Pokemon, SpawnPoint, ScannedLocation,
-                     ScanSpawnPoint)
+                     ScanSpawnPoint, HashKeys)
 from .utils import now, cur_sec, cellid, date_secs, equi_rect_distance
 from .altitude import get_altitude
 
