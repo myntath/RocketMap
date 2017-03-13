@@ -41,7 +41,7 @@ from pgoapi import utilities as util
 from pgoapi.hash_server import HashServer
 
 from .models import parse_map, GymDetails, parse_gyms, MainWorker, \
-                    WorkerStatus, HashKeys
+                    WorkerStatus
 from .fakePogoApi import FakePogoApi
 from .utils import now, generate_device_info
 from .transform import get_new_coords, jitter_location
@@ -391,7 +391,8 @@ def search_overseer_thread(args, new_location_queue, pause_bit, heartb,
     # Create the key scheduler.
     if args.hash_key:
         log.info('Enabling hashing key scheduler...')
-        key_scheduler = schedulers.KeyScheduler(args.hash_key)
+        key_scheduler = schedulers.KeyScheduler(args.hash_key,
+                                                db_updates_queue)
 
     if(args.print_status):
         log.info('Starting status printer thread...')
@@ -1030,15 +1031,6 @@ def search_worker_thread(args, account_queue, account_failures,
                         step_location[0], step_location[1],
                         parsed['count'])
                     log.debug(status['message'])
-                    hashkeys = {}
-                    hashkeys[0] = {
-                        'key': key_instance['key'],
-                        'maximum': key_instance['maximum'],
-                        'average': key_instance['average'],
-                        'peak': key_instance['peak'],
-                        'expires': key_instance['expires'],
-                    }
-                    dbq.put((HashKeys, hashkeys))
                     log.debug(
                         ('Hash key {} has {}/{} RPM ' +
                          'left.').format(key, key_instance['remaining'],

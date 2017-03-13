@@ -59,7 +59,7 @@ from operator import itemgetter
 from datetime import datetime, timedelta
 from .transform import get_new_coords
 from .models import (hex_bounds, Pokemon, SpawnPoint, ScannedLocation,
-                     ScanSpawnPoint)
+                     ScanSpawnPoint, HashKeys)
 from .utils import now, cur_sec, cellid, date_secs, equi_rect_distance
 from .altitude import get_altitude
 
@@ -1070,19 +1070,24 @@ class SchedulerFactory():
 # server keys.
 class KeyScheduler(object):
 
-    def __init__(self, keys):
+    def __init__(self, keys, db_updates_queue):
         self.keys = {}
         for key in keys:
             self.keys[key] = {
-                'key': key,
                 'remaining': 0,
+                'average': 0,
                 'maximum': 0,
                 'peak': 0,
-                'expires': None,
+                'expires': None
             }
 
         self.key_cycle = itertools.cycle(keys)
         self.curr_key = ''
+        hashkeys = self.keys.copy()
+        for val in hashkeys.itervalues():
+            val.pop('remaining', None)
+        log.debug(hashkeys)
+        db_updates_queue.put((HashKeys, hashkeys))
 
     def keys(self):
         return self.keys
@@ -1093,3 +1098,8 @@ class KeyScheduler(object):
     def next(self):
         self.curr_key = self.key_cycle.next()
         return self.curr_key
+
+    def parse_keys(self, keys):
+        hashkeys = self.keys.copy()
+        print(hashkeys)
+        return self.parse_keys
