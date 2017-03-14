@@ -87,6 +87,10 @@ class Pogom(Flask):
         self.route("/get_stats", methods=['GET'])(self.get_account_stats)
         self.route("/accounts", methods=['GET'])(self.get_full_account_stats)
         self.route("/accounts", methods=['POST'])(self.post_account_status)
+        self.route("/robots.txt", methods=['GET'])(self.render_robots_txt)
+
+    def render_robots_txt(self):
+        return render_template('robots.txt')
 
     def get_bookmarklet(self):
         args = get_args()
