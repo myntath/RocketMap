@@ -1674,7 +1674,7 @@ class HashKeys(BaseModel):
     maximum = IntegerField(default=0)
     average = IntegerField(default=0)
     peak = IntegerField(default=0)
-    expires = DateTimeField(default=0)
+    expires = DateTimeField(default=0, null=True)
     last_updated = DateTimeField(default=datetime.utcnow)
 
     @staticmethod
@@ -1688,7 +1688,7 @@ class HashKeys(BaseModel):
             'maximum': 0,
             'average': 0,
             'peak': 0,
-            'expires': None,
+            'expires': 0,
             'last_updated': None
             }
 

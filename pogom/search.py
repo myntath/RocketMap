@@ -41,7 +41,7 @@ from pgoapi import utilities as util
 from pgoapi.hash_server import HashServer
 
 from .models import parse_map, GymDetails, parse_gyms, MainWorker, \
-                    WorkerStatus
+                    WorkerStatus, HashKeys
 from .fakePogoApi import FakePogoApi
 from .utils import now, generate_device_info
 from .transform import get_new_coords, jitter_location
@@ -1031,6 +1031,16 @@ def search_worker_thread(args, account_queue, account_failures,
                         step_location[0], step_location[1],
                         parsed['count'])
                     log.debug(status['message'])
+                    hashkeys_db = {}
+                    hashkeys_db[key] = {
+                        'maximum': key_instance['maximum'],
+                        'average': key_instance['average'],
+                        'peak': peak,
+                        'expires': key_instance['expires']
+                    }
+                    hashkeys_db[key]['key'] = key
+                    log.debug(hashkeys_db)
+                    dbq.put((HashKeys, hashkeys_db))
                     log.debug(
                         ('Hash key {} has {}/{} RPM ' +
                          'left.').format(key, key_instance['remaining'],
