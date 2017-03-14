@@ -1086,8 +1086,9 @@ class KeyScheduler(object):
         hashkeys = self.keys.copy()
         for val in hashkeys.itervalues():
             val.pop('remaining', None)
-        log.debug(hashkeys)
-        db_updates_queue.put((HashKeys, hashkeys))
+        for key, val in hashkeys.iteritems():
+            log.debug("{} = {}".format(key, val))
+            db_updates_queue.put((HashKeys, hashkeys))
 
     def keys(self):
         return self.keys
@@ -1099,7 +1100,6 @@ class KeyScheduler(object):
         self.curr_key = self.key_cycle.next()
         return self.curr_key
 
-    def parse_keys(self, keys):
-        hashkeys = self.keys.copy()
-        print(hashkeys)
+    def parse_keys(self):
+
         return self.parse_keys
