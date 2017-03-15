@@ -1032,14 +1032,9 @@ def search_worker_thread(args, account_queue, account_failures,
                         parsed['count'])
                     log.debug(status['message'])
                     hashkeys_db = {}
-                    hashkeys_db[key] = {
-                        'maximum': key_instance['maximum'],
-                        'average': key_instance['average'],
-                        'peak': key_instance['peak'],
-                        'expires': key_instance['expires']
-                    }
-                    hashkeys_db[key]['key'] = key
-                    log.debug(hashkeys_db)
+                    hashkeys_db[0] = key_instance.copy()
+                    hashkeys_db[0]['key'] = key
+                    hashkeys_db[0].pop('remaining', None)
                     dbq.put((HashKeys, hashkeys_db))
                     log.debug(
                         ('Hash key {} has {}/{} RPM ' +

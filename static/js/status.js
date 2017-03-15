@@ -57,7 +57,7 @@ function addWorker(mainWorkerHash, workerHash) {
     $(row).appendTo('#table_' + mainWorkerHash)
 }
 
-function addhash(mainKeyHash, keyHash) {
+function addhashtable(mainKeyHash, keyHash) {
     var hashrow = `
     <div id="hashrow_${keyHash}" class="status_row">
       <div id="key_${keyHash}" class="status_cell"/>
@@ -109,13 +109,15 @@ function processWorker(i, worker) {
 }
 
 function processHashKeys(i, hashkey) {
+    var mainKeyHash = hashFnv32a(hashkey['key'], true)
     var keyHash = hashFnv32a(hashkey['key'], true)
+    mainKeyHash = 'global'
     if ($('#hashtable_global').length === 0) {
-        addhashtable('global')
+        addhash('global')
     }
 
     if ($('#hashrow_' + keyHash).length === 0) {
-        addhash('global', keyHash)
+        addhashtable(mainKeyHash, keyHash)
     }
 
     var lastUpdated = new Date(hashkey['last_updated'])
@@ -157,7 +159,7 @@ function parseResult(result) {
 /*
  * Tables
  */
-function addhashtable(mainKeyHash) {
+function addhash(mainKeyHash) {
     var hashtable = `
     <div class="status_table" id="hashtable_${mainKeyHash}">
      <div class="status_row header">
@@ -168,7 +170,7 @@ function addhashtable(mainKeyHash) {
         Maximum RPM
       </div>
       <div class="status_cell">
-        Average Use Per Minute
+        Average Per Minute
         </div>
       <div class="status_cell">
         Peak
@@ -264,7 +266,6 @@ function compare(index) {
         return $.isNumeric(valA) && $.isNumeric(valB) ? valA - valB : valA.localeCompare(valB)
     }
 }
-
 function compareHashTable(index) {
     return function (a, b) {
         var valA = getHashtableValue(a, index)
@@ -274,8 +275,6 @@ function compareHashTable(index) {
 }
 
 function updateStatus() {
-    lastRawUpdateTime = new Date()
-
     loadRawData().done(function (result) {
         // Parse result on success.
         parseResult(result)

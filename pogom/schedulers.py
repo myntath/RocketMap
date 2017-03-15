@@ -1127,7 +1127,7 @@ class KeyScheduler(object):
                 'average': 0,
                 'maximum': 0,
                 'peak': 0,
-                'expires': 0
+                'expires': None
             }
 
         self.key_cycle = itertools.cycle(keys)

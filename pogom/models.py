@@ -1677,7 +1677,7 @@ class HashKeys(BaseModel):
     maximum = SmallIntegerField(default=0)
     average = SmallIntegerField(default=0)
     peak = SmallIntegerField(default=0)
-    expires = DateTimeField(default=0)
+    expires = DateTimeField(default=0, null=True)
     last_updated = DateTimeField(default=datetime.utcnow)
 
     @staticmethod
@@ -1691,7 +1691,7 @@ class HashKeys(BaseModel):
             'maximum': 0,
             'average': 0,
             'peak': 0,
-            'expires': 0,
+            'expires': None,
             'last_updated': None
             }
 
