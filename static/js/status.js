@@ -274,6 +274,8 @@ function compareHashTable(index) {
 }
 
 function updateStatus() {
+    lastRawUpdateTime = new Date()
+
     loadRawData().done(function (result) {
         // Parse result on success.
         parseResult(result)
