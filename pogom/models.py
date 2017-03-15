@@ -1674,9 +1674,9 @@ class Token(flaskDb.Model):
 
 class HashKeys(BaseModel):
     key = CharField(primary_key=True, max_length=20)
-    maximum = IntegerField(default=0)
-    average = IntegerField(default=0)
-    peak = IntegerField(default=0)
+    maximum = SmallIntegerField(default=0)
+    average = SmallIntegerField(default=0)
+    peak = SmallIntegerField(default=0)
     expires = DateTimeField(default=0)
     last_updated = DateTimeField(default=datetime.utcnow)
 
