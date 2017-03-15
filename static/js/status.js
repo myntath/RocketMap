@@ -116,7 +116,7 @@ function processHashKeys(i, hashkey) {
 
     if ($('#hashrow_' + keyHash).length === 0) {
         addhash('global', keyHash)
-    }
+}
 
     var lastUpdated = new Date(hashkey['last_updated'])
     lastUpdated = lastUpdated.getHours() + ':' +
