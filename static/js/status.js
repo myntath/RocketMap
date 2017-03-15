@@ -57,7 +57,7 @@ function addWorker(mainWorkerHash, workerHash) {
     $(row).appendTo('#table_' + mainWorkerHash)
 }
 
-function addhashtable(mainKeyHash, keyHash) {
+function addhash(mainKeyHash, keyHash) {
     var hashrow = `
     <div id="hashrow_${keyHash}" class="status_row">
       <div id="key_${keyHash}" class="status_cell"/>
@@ -109,16 +109,14 @@ function processWorker(i, worker) {
 }
 
 function processHashKeys(i, hashkey) {
-    var mainKeyHash = hashFnv32a(hashkey['key'], true)
     var keyHash = hashFnv32a(hashkey['key'], true)
-    mainKeyHash = 'global'
     if ($('#hashtable_global').length === 0) {
-        addhash('global')
+        addhashtable('global')
     }
 
     if ($('#hashrow_' + keyHash).length === 0) {
-        addhashtable(mainKeyHash, keyHash)
-    }
+        addhash('global', keyHash)
+}
 
     var lastUpdated = new Date(hashkey['last_updated'])
     lastUpdated = lastUpdated.getHours() + ':' +
@@ -159,7 +157,7 @@ function parseResult(result) {
 /*
  * Tables
  */
-function addhash(mainKeyHash) {
+function addhashtable(mainKeyHash) {
     var hashtable = `
     <div class="status_table" id="hashtable_${mainKeyHash}">
      <div class="status_row header">

@@ -1035,7 +1035,7 @@ def search_worker_thread(args, account_queue, account_failures,
                     hashkeys_db[key] = {
                         'maximum': key_instance['maximum'],
                         'average': key_instance['average'],
-                        'peak': peak,
+                        'peak': key_instance['peak'],
                         'expires': key_instance['expires']
                     }
                     hashkeys_db[key]['key'] = key
