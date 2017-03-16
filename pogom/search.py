@@ -739,7 +739,6 @@ def search_worker_thread(args, account_queue, account_failures,
             if 'starttime' in status:
                 dbq.put((WorkerStatus, {0: WorkerStatus.db_format(status)}))
             status['starttime'] = now()
-            starttime = now()
 
             # Track per loop.
             first_login = True
@@ -1003,13 +1002,6 @@ def search_worker_thread(args, account_queue, account_failures,
                         if key_instance['peak'] < peak:
                             key_instance['peak'] = peak
 
-                        elapsed = now() - starttime
-                        if elapsed == 0:
-                            elapsed = 1
-
-                        key_instance['average'] = (
-                            key_instance['peak'] * 60.0 / elapsed)
-
                         expires = HashServer.status.get('expiration', 0)
 
                         if expires > 0:
@@ -1161,6 +1153,15 @@ def search_worker_thread(args, account_queue, account_failures,
                                      'last_fail_time': now(),
                                      'reason': 'exception'})
             time.sleep(args.scan_delay)
+
+
+def db_update_hashkey(key, db_updates_queue, key_instance):
+
+    hashkeys_db = {}
+    hashkeys_db[0] = key_instance.copy()
+    hashkeys_db[0]['key'] = key
+    hashkeys_db[0].pop('remaining', None)
+    db_updates_queue.put((HashKeys, hashkeys_db))
 
 
 def map_request(api, position, no_jitter=False):

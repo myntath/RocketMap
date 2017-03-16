@@ -185,10 +185,10 @@ function createHashTable(mainKeyHash) {
    </div>`
 
     $('#status_container').prepend(hashtable)
-    $(hashtable).find('.status_row.header .status_cell').click(sortHashkeyTable)
+    $(hashtable).find('.status_row.header .status_cell').click(sortHashTable)
 }
 
-function sortHashkeyTable() {
+function sortHashTable() {
     var hashtable = $(this).parents('.status_table').eq(0)
     var hashrow = hashtable.find('.status_row:gt(0)').toArray().sort(compareHashTable($(this).index()))
     this.asc = !this.asc
