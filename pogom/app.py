@@ -3,9 +3,10 @@
 
 import calendar
 import logging
+import facebook
 
 from flask import Flask, abort, jsonify, render_template, request,\
-    make_response, Response
+    make_response, Response, redirect
 from flask.json import JSONEncoder
 from flask_compress import Compress
 from datetime import datetime
@@ -14,7 +15,7 @@ from pogom.utils import get_args
 from datetime import timedelta
 from collections import OrderedDict
 from bisect import bisect_left
-
+import MySQLdb as mdb
 from . import config
 from .models import (Pokemon, Gym, Pokestop, ScannedLocation,
                      MainWorker, WorkerStatus, Token, Account)
@@ -68,6 +69,7 @@ class Pogom(Flask):
             self.blacklist_keys = []
 
         # Routes
+        log.error('TEST')
         self.json_encoder = CustomJSONEncoder
         self.route("/", methods=['GET'])(self.fullmap)
         self.route("/raw_data", methods=['GET'])(self.raw_data)
@@ -194,6 +196,38 @@ class Pogom(Flask):
 
     @requires_auth
     def fullmap(self):
+        FACEBOOK_APP_ID = '1856322541309076' 
+        REDIRECT_URI = "http://test.boolopole.tk/"
+        log.error('REDIRECT!!')
+        code = (request.args.get('code'))
+        if code == None:
+            return redirect("https://www.facebook.com/dialog/oauth?client_id=%s&redirect_uri=%s&response_type=code&scope=email,public_profile"
+                        % (FACEBOOK_APP_ID, REDIRECT_URI))
+        else:
+            
+            graph = facebook.GraphAPI()
+            accesscode = graph.get_access_token_from_code(code, REDIRECT_URI, FACEBOOK_APP_ID, '0e4dd498b6f697ea376b3ca935e8947b')
+            graph = facebook.GraphAPI(access_token=accesscode['access_token'])
+            profile = graph.get_object(id="me", fields='email,name')
+            log.error(profile)
+            try:
+                con
+            except NameError:
+                con = mdb.connect('localhost', 'powermondbuser', 'lRac[0432', 'mynt')
+            with con:
+                cur = con.cursor()
+                cur.execute("select * from authorised_users where id='{}'".format(profile['id']))
+                num = cur.fetchone()
+                cur.execute("INSERT INTO `users` (`id`,`name`,`email`,`last_seen`) VALUES ('{}', '{}', '{}', NOW()) ON DUPLICATE KEY UPDATE last_seen = NOW()".format(profile['id'], profile['name'], profile['email']))
+                log.error(num)
+                if num == None:
+                    log.error('not authorised')
+                else:
+                    log.error('authorised')
+            con.close()
+            cur.close()
+
+
         self.heartbeat[0] = now()
         args = get_args()
         if args.on_demand_timeout > 0:
