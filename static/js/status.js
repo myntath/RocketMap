@@ -113,7 +113,7 @@ function processHashKeys(i, hashkey) {
     var keyHash = hashFnv32a(hashkey['key'], true)
     mainKeyHash = 'global'
     if ($('#hashtable_global').length === 0) {
-        addhash('global')
+        createHashTable('global')
     }
 
     if ($('#hashrow_' + keyHash).length === 0) {
@@ -159,7 +159,7 @@ function parseResult(result) {
 /*
  * Tables
  */
-function addhash(mainKeyHash) {
+function createHashTable(mainKeyHash) {
     var hashtable = `
     <div class="status_table" id="hashtable_${mainKeyHash}">
      <div class="status_row header">
@@ -185,10 +185,10 @@ function addhash(mainKeyHash) {
    </div>`
 
     $('#status_container').prepend(hashtable)
-    $(hashtable).find('.status_row.header .status_cell').click(hashtableSort)
+    $(hashtable).find('.status_row.header .status_cell').click(sortHashkeyTable)
 }
 
-function hashtableSort() {
+function sortHashkeyTable() {
     var hashtable = $(this).parents('.status_table').eq(0)
     var hashrow = hashtable.find('.status_row:gt(0)').toArray().sort(compareHashTable($(this).index()))
     this.asc = !this.asc
@@ -266,6 +266,7 @@ function compare(index) {
         return $.isNumeric(valA) && $.isNumeric(valB) ? valA - valB : valA.localeCompare(valB)
     }
 }
+
 function compareHashTable(index) {
     return function (a, b) {
         var valA = getHashtableValue(a, index)
@@ -275,6 +276,7 @@ function compareHashTable(index) {
 }
 
 function updateStatus() {
+    lastRawUpdateTime = new Date()
     loadRawData().done(function (result) {
         // Parse result on success.
         parseResult(result)
