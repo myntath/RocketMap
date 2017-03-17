@@ -6,7 +6,7 @@ import logging
 import facebook
 
 from flask import Flask, abort, jsonify, render_template, request,\
-    make_response, Response, redirect
+    make_response, Response, redirect, session
 from flask.json import JSONEncoder
 from flask_compress import Compress
 from datetime import datetime
@@ -53,7 +53,12 @@ class Pogom(Flask):
         compress.init_app(self)
 
         args = get_args()
-
+        
+        # Session
+        self.secret_key = 'kdjlsdfmncjh38234s'
+        #sess = Session()
+        #sess.init_app(self)
+ 
         # Global blist
         if not args.disable_blacklist:
             log.info('Retrieving blacklist...')
@@ -194,22 +199,41 @@ class Pogom(Flask):
             return jsonify({'message': 'invalid use of api'})
         return self.get_search_control()
 
-    @requires_auth
+#    @requires_auth
     def fullmap(self):
         FACEBOOK_APP_ID = '1856322541309076' 
-        REDIRECT_URI = "http://test.boolopole.tk/"
+        REDIRECT_URI = "http://boolopole.tk/maps/"
         log.error('REDIRECT!!')
         code = (request.args.get('code'))
-        if code == None:
+        if 'test' in session:
+            log.error(session['test'])
+        else:
+            log.error('NO SESSION')
+            session['test'] = 'GOT SESSION'
+        if 'name' in session:
+            log.error('found session: {}'.format(session))
+        elif code == None:
             return redirect("https://www.facebook.com/dialog/oauth?client_id=%s&redirect_uri=%s&response_type=code&scope=email,public_profile"
                         % (FACEBOOK_APP_ID, REDIRECT_URI))
         else:
             
             graph = facebook.GraphAPI()
-            accesscode = graph.get_access_token_from_code(code, REDIRECT_URI, FACEBOOK_APP_ID, '0e4dd498b6f697ea376b3ca935e8947b')
-            graph = facebook.GraphAPI(access_token=accesscode['access_token'])
-            profile = graph.get_object(id="me", fields='email,name')
+            try:
+                accesscode = graph.get_access_token_from_code(code, REDIRECT_URI, FACEBOOK_APP_ID, '0e4dd498b6f697ea376b3ca935e8947b')
+                graph = facebook.GraphAPI(access_token=accesscode['access_token'])
+                profile = graph.get_object(id="me", fields='email,name')
+            except:
+                return redirect("https://www.facebook.com/dialog/oauth?client_id=%s&redirect_uri=%s&response_type=code&scope=email,public_profile"
+                    % (FACEBOOK_APP_ID, REDIRECT_URI))
             log.error(profile)
+            if 'email' in profile:
+                log.error(profile['email'])
+            else:
+                profile['email'] = 'not given'
+                log.error('email no supplied')
+            session['id'] = profile['id']
+            session['email'] = profile['email'] 
+            session['name'] = profile['name']
             try:
                 con
             except NameError:
@@ -220,12 +244,14 @@ class Pogom(Flask):
                 num = cur.fetchone()
                 cur.execute("INSERT INTO `users` (`id`,`name`,`email`,`last_seen`) VALUES ('{}', '{}', '{}', NOW()) ON DUPLICATE KEY UPDATE last_seen = NOW()".format(profile['id'], profile['name'], profile['email']))
                 log.error(num)
-                if num == None:
-                    log.error('not authorised')
-                else:
-                    log.error('authorised')
+            if num == None:
+                log.error('not authorised')
+                #return redirect("https://boolopole.tk/unauth")
+            else:
+                log.error('authorised')
             con.close()
             cur.close()
+            return redirect("https://boolopole.tk/maps/")
 
 
         self.heartbeat[0] = now()
@@ -254,8 +280,11 @@ class Pogom(Flask):
                                show_scan=scan_display
                                )
 
-    @requires_auth
+#    @requires_auth
     def raw_data(self):
+        if 'name' not in session:
+            log.error("illegal raw_data access")
+            return "not logged in"
         self.heartbeat[0] = now()
         args = get_args()
         if args.on_demand_timeout > 0:
@@ -614,6 +643,9 @@ class Pogom(Flask):
                                )
 
     def get_gymdata(self):
+        if 'name' not in session:
+            log.error("illegal gym data access")
+            return 'not logged in'
         gym_id = request.args.get('id')
         gym = Gym.get_gym(gym_id)
 
