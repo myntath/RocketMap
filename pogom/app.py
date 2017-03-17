@@ -202,7 +202,7 @@ class Pogom(Flask):
 #    @requires_auth
     def fullmap(self):
         FACEBOOK_APP_ID = '1856322541309076' 
-        REDIRECT_URI = "http://boolopole.tk/maps/"
+        REDIRECT_URI = "https://boolopole.tk/maps/"
         log.error('REDIRECT!!')
         code = (request.args.get('code'))
         if 'test' in session:
@@ -246,12 +246,12 @@ class Pogom(Flask):
                 log.error(num)
             if num == None:
                 log.error('not authorised')
-                #return redirect("https://boolopole.tk/unauth")
+                #return redirect(REDIRECT_URI + "unauth")
             else:
                 log.error('authorised')
             con.close()
             cur.close()
-            return redirect("https://boolopole.tk/maps/")
+            return redirect(REDIRECT_URI)
 
 
         self.heartbeat[0] = now()
