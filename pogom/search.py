@@ -994,7 +994,7 @@ def search_worker_thread(args, account_queue, account_failures,
                              .get('inventory_item_data')
                              .get('player_stats')
                              .get('level'))
-                    log.debug('{} is level {}'.format(account['username'], level)
+                    log.debug('{} is level {}'.format(account['username'], level))
                     captcha = handle_captcha(args, status, api, account,
                                              account_failures,
                                              account_captchas, whq,

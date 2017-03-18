@@ -243,8 +243,11 @@ def main():
                 args.accounts.append({'username': account['name'],
                                       'password': account['password'],
                                       'auth_service': account['login_type']})
-    db = False
-    db = init_database(app)
+        connections = args.db_max_connections
+        if len(args.accounts) > 0:
+            connections *= len(args.accounts)
+            db.max_connections = connections
+
 
     if args.clear_db:
         log.info('Clearing database')
