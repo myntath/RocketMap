@@ -248,7 +248,6 @@ def main():
             connections *= len(args.accounts)
             db.max_connections = connections
 
-
     if args.clear_db:
         log.info('Clearing database')
         if args.db_type == 'mysql':
