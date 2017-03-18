@@ -65,6 +65,10 @@ class Pogom(Flask):
         self.route("/get_stats", methods=['GET'])(self.get_account_stats)
         self.route("/accounts", methods=['GET'])(self.get_full_account_stats)
         self.route("/accounts", methods=['POST'])(self.post_account_status)
+        self.route("/robots.txt", methods=['GET'])(self.render_robots_txt)
+
+    def render_robots_txt(self):
+        return render_template('robots.txt')
 
     def get_bookmarklet(self):
         args = get_args()
@@ -115,8 +119,12 @@ class Pogom(Flask):
         return jsonify(d)
 
     def validate_request(self):
-        if self._ip_is_blacklisted(request.remote_addr):
-            log.debug('Denied access to %s.', request.remote_addr)
+        args = get_args()
+        ip_addr = request.remote_addr
+        if ip_addr in args.trusted_proxies:
+            ip_addr = request.headers.get('X-Forwarded-For', ip_addr)
+        if self._ip_is_blacklisted(ip_addr):
+            log.debug('Denied access to %s.', ip_addr)
             abort(403)
 
     def _ip_is_blacklisted(self, ip):
