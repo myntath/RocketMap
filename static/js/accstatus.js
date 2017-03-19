@@ -42,7 +42,7 @@ function processAccount(i, account) {
 
     var lastModified = new Date(account['last_active'])
     lastModified = lastModified.getFullYear() + '/' +
-        lastModified.getMonth() + '/' + lastModified.getDate() + ' ' +
+        (lastModified.getMonth() + 1 ) + '/' + lastModified.getDate() + ' ' +
         lastModified.getHours() + ':' +
         ('0' + lastModified.getMinutes()).slice(-2) + ':' +
         ('0' + lastModified.getSeconds()).slice(-2)
