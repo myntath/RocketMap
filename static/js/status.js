@@ -7,7 +7,7 @@ var statusPagePassword = false
 var groupByWorker = true
 var showHashTable = true
 var showWorkersTable = true
-
+var hashkeysavg = {}
 // Raw data updating
 var minUpdateDelay = 1000 // Minimum delay between updates (in ms).
 var lastRawUpdateTime = new Date()
@@ -118,8 +118,25 @@ function processHashKeys(i, hashkey) {
 
     if ($('#hashrow_' + keyHash).length === 0) {
         addhashtable(mainKeyHash, keyHash)
+        var tempkey = {
+            samples: [],
+            average: 0,
+            count: 0
+        }
+        hashkeysavg[hashkey['key']] = tempkey
     }
-
+    var writeIndex = hashkeysavg[hashkey['key']].count % 20
+    hashkeysavg[hashkey['key']].count += 1
+    hashkeysavg[hashkey['key']].samples[writeIndex] = hashkey['peak']
+    var numSamples = hashkeysavg[hashkey['key']].samples.length
+    var sumSamples = 0
+    for (var j = 0; j < numSamples; j++) {
+        sumSamples += hashkeysavg[hashkey['key']].samples[j]
+    }
+    if (numSamples > 0) {
+        hashkeysavg[hashkey['key']].average = sumSamples / numSamples
+    }
+    console.log(JSON.stringify(hashkeysavg))
     var lastUpdated = new Date(hashkey['last_updated'])
     lastUpdated = lastUpdated.getHours() + ':' +
         ('0' + lastUpdated.getMinutes()).slice(-2) + ':' +
@@ -138,7 +155,7 @@ function processHashKeys(i, hashkey) {
 
     $('#key_' + keyHash).html(hashkey['key'])
     $('#maximum_' + keyHash).html(hashkey['maximum'])
-    $('#average_' + keyHash).html(hashkey['average'])
+    $('#average_' + keyHash).html(hashkeysavg[hashkey['key']].average)
     $('#peak_' + keyHash).html(hashkey['peak'])
     $('#last_updated_' + keyHash).html(lastUpdated)
     $('#expires_' + keyHash).html(expires)
