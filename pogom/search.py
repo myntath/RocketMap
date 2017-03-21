@@ -40,7 +40,8 @@ from pgoapi.utilities import f2i
 from pgoapi import utilities as util
 from pgoapi.hash_server import HashServer
 
-from .models import parse_map, GymDetails, parse_gyms, MainWorker, WorkerStatus, Account, BadScans
+from .models import (parse_map, GymDetails, parse_gyms, MainWorker,
+                     WorkerStatus, Account, BadScans)
 from .fakePogoApi import FakePogoApi
 from .utils import now, generate_device_info
 from .transform import get_new_coords, jitter_location
@@ -375,7 +376,9 @@ def search_overseer_thread(args, new_location_queue, pause_bit, heartb,
     to prevent accounts from being cycled through too quickly.
     '''
     for i, account in enumerate(args.accounts):
-        Account.add_account(db_updates_queue, account['username'], account['password'], account['auth_service'])
+        if not args.accountdb:
+            Account.add_account(db_updates_queue, account['username'],
+                                account['password'], account['auth_service'])
         account_queue.put(account)
 
     # Create a list for failed accounts.
@@ -1003,9 +1006,11 @@ def search_worker_thread(args, account_queue, account_failures,
                 if not response_dict:
                     status['fail'] += 1
                     consecutive_fails += 1
-                    Account.update_accounts(dbq, account['username'], True, False, False)
-                    BadScans.add_bad_scan(account['username'], 'fail', step_location[0], step_location[1], dbq)
-                    flog.error(account['username'] + ':nothing returned')
+                    Account.update_accounts(dbq, account['username'],
+                                            True, False, False, 0)
+                    BadScans.add_bad_scan(account['username'], 'fail',
+                                          step_location[0], step_location[1],
+                                          args.status_name, dbq)
                     status['message'] = messages['invalid']
                     log.error(status['message'])
                     time.sleep(scheduler.delay(status['last_scan_date']))
@@ -1014,13 +1019,32 @@ def search_worker_thread(args, account_queue, account_failures,
                 # Got the response, check for captcha, parse it out, then send
                 # todo's to db/wh queues.
                 try:
+                    level = 0
+                    inventory_items = (response_dict
+                                       .get('responses')
+                                       .get('GET_INVENTORY')
+                                       .get('inventory_delta')
+                                       .get('inventory_items'))
+                    level = filter(lambda i:
+                                   'player_stats' in i['inventory_item_data'],
+                                   inventory_items)
+                    level = (level[0]
+                             .get('inventory_item_data')
+                             .get('player_stats')
+                             .get('level'))
+                    log.debug(
+                        '{} is level {}'.format(account['username'], level))
                     captcha = handle_captcha(args, status, api, account,
                                              account_failures,
                                              account_captchas, whq,
-                                             response_dict, step_location, account_queue)
+                                             response_dict, step_location)
                     if captcha is not None:
-                        Account.update_accounts(dbq, account['username'],False, False, True)
-                        BadScans.add_bad_scan(account['username'], 'captcha', step_location[0], step_location[1], dbq)
+                        Account.update_accounts(dbq, account['username'],
+                                                False, False, True, level)
+                        BadScans.add_bad_scan(account['username'], 'captcha',
+                                              step_location[0],
+                                              step_location[1],
+                                              args.status_name, dbq)
 
                     if captcha is not None and captcha:
                         # Make another request for the same location
@@ -1039,12 +1063,17 @@ def search_worker_thread(args, account_queue, account_failures,
                     if parsed['count'] > 0:
                         status['success'] += 1
                         consecutive_noitems = 0
-                        Account.update_accounts(dbq, account['username'],False, False, False)
+                        Account.update_accounts(dbq, account['username'],
+                                                False, False, False, level)
                     else:
                         status['noitems'] += 1
                         consecutive_noitems += 1
-                        Account.update_accounts(dbq, account['username'],False, True, False)
-                        BadScans.add_bad_scan(account['username'], 'empty', step_location[0], step_location[1], dbq)
+                        Account.update_accounts(dbq, account['username'],
+                                                False, True, False, level)
+                        BadScans.add_bad_scan(account['username'], 'empty',
+                                              step_location[0],
+                                              step_location[1],
+                                              args.status_name, dbq)
                     consecutive_fails = 0
                     status['message'] = ('Search at {:6f},{:6f} completed ' +
                                          'with {} finds.').format(
@@ -1062,8 +1091,12 @@ def search_worker_thread(args, account_queue, account_failures,
                                          'banned.').format(step_location[0],
                                                            step_location[1],
                                                            account['username'])
-                    Account.update_accounts(dbq, account['username'], True, False, False)
-                    BadScans.add_bad_scan(account['username'], 'fail', step_location[0], step_location[1], dbq)
+                    Account.update_accounts(dbq, account['username'],
+                                            True, False, False, level)
+
+                    BadScans.add_bad_scan(account['username'], 'fail',
+                                          step_location[0], step_location[1],
+                                          args.status_name, dbq)
                     log.exception('{}. Exception message: {}'.format(
                         status['message'], repr(e)))
 

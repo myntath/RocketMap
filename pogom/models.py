@@ -581,6 +581,185 @@ class Account(BaseModel):
         log.info('Added account: {}'.format(name)) 
         return True
 
+class BadScans(BaseModel):
+    name = CharField(null=False)
+    scan_type = CharField(null=False)
+    scan_number = IntegerField(null=False)
+    lat = CharField(default='-1')
+    lon = CharField(default='-1')
+    status_name = CharField(default='')
+    time = DateTimeField(default=datetime.utcnow())
+
+    @staticmethod
+    def add_bad_scan(name, scan_type, lat, lon, status_name, db_update_queue):
+        query = Account.select().where(Account.name == name).dicts()
+        result = []
+        for i in query:
+            result.append(i)
+
+        if len(result) != 1:
+            log.error('You account db is borked')
+            return False
+
+        result = result[0]
+        scan_number = result['total_scans']
+        out = {'name': name,
+               'scan_type': scan_type,
+               'scan_number': scan_number,
+               'lat': lat,
+               'lon': lon,
+               'status_name': status_name,
+               'time': datetime.utcnow()}
+        out = {0: out}
+        db_update_queue.put((BadScans, out))
+
+        return True
+
+
+class Account(BaseModel):
+    name = CharField(primary_key=True, null=False)
+    password = CharField(null=False)
+    login_type = CharField(null=False)
+    total_scans = IntegerField(default=0)
+    total_fails = IntegerField(default=0)
+    total_empty = IntegerField(default=0)
+    total_success = IntegerField(default=0)
+    total_captcha = IntegerField(default=0)
+    level = IntegerField(default=0)
+    enabled = BooleanField(default=True, null=False)
+    last_active = DateTimeField(default=datetime.utcnow())
+
+    @classmethod
+    def enable_account(cls, name, db_update_queue):
+        account = cls.select().dicts().where(cls.name == name)
+        if account['enabled']:
+            return False
+        else:
+            account['enabled'] = True
+            db_update_queue.put((cls, account))
+            return True
+
+    @classmethod
+    def disable_account(cls, name, db_update_queue):
+        account = cls.select().dicts().where(cls.name == name)
+        if not account['enabled']:
+            return False
+        else:
+            account['enabled'] = False
+            db_update_queue.put((cls, account))
+            return True
+
+    @classmethod
+    def get_all_stats(cls):
+        raw = [m for m in cls.select().dicts()]
+        for i in range(0, len(raw)):
+
+            raw[i].pop('password', None)
+
+            if raw[i]['total_scans'] == 0:
+                raw[i]['fail_rate'] = '0'
+                raw[i]['empty_rate'] = '0'
+                raw[i]['captcha_rate'] = '0'
+                raw[i]['success_rate'] = '0'
+            else:
+                fr = float(raw[i]['total_fails'])
+                fr = fr / raw[i]['total_scans'] * 100
+                raw[i]['fail_rate'] = round(fr, 2)
+
+                er = float(raw[i]['total_empty'])
+                er = er / raw[i]['total_scans'] * 100
+                raw[i]['empty_rate'] = round(er, 2)
+
+                cr = float(raw[i]['total_captcha'])
+                cr = cr / raw[i]['total_scans'] * 100
+                raw[i]['captcha_rate'] = round(cr, 2)
+
+                sr = float(raw[i]['total_success'])
+                sr = sr / raw[i]['total_scans'] * 100
+                raw[i]['success_rate'] = round(sr, 2)
+
+        return raw
+
+    @staticmethod
+    def update_accounts(db_update_queue, name, fail, empty, captcha, level):
+
+        # check account exists
+        query = (Account.select().where(Account.name == name).dicts())
+        result = []
+        for i in query:
+            result.append(i)
+        if len(result) == 0:
+            log.error('Account {} does not exists can\'t update'.format(name))
+            return False
+
+        elif len(result) > 1:
+            log.error('Multiple accounts with the same name')
+            return False
+
+        # check not more than one of fail, empty or captcha are true
+        if (fail and empty) or (fail and captcha) or (captcha and empty):
+            log.error('Scan should not have multiple fail, empty or captcha')
+            return False
+
+        # set level
+        if level != 0:
+            result[0]['level'] = level
+
+        # add 1 to scans
+        result[0]['total_scans'] += 1
+        result[0]['last_active'] = datetime.utcnow()
+
+        # deal with fail case
+        if fail:
+            result[0]['total_fails'] += 1
+
+        # deal with empty case
+        elif empty:
+            result[0]['total_empty'] += 1
+
+        # deal with captcha case
+        elif captcha:
+            result[0]['total_captcha'] += 1
+
+        # must be a success
+        else:
+            result[0]['total_success'] += 1
+
+        out = {0: result[0]}
+        db_update_queue.put((Account, out))
+        return True
+
+    @staticmethod
+    def add_account(db_update_queue, name, password, account_type):
+
+        # check exists
+        query = Account.select().where(Account.name == name).dicts()
+
+        if len(query) != 0:
+            log.debug('The account {} already exists'.format(name))
+            return False
+
+        # check login type valid
+        validTypes = ['ptc', 'google']
+
+        if account_type not in validTypes:
+            log.error('Invalid account type: {}'.format(account_type))
+            return False
+
+        # add account
+        account = {
+            0: {
+                'name': name,
+                'password': password,
+                'login_type': account_type
+            }
+        }
+        db_update_queue.put((Account, account))
+        log.info('Added account: {}'.format(name))
+
+        return True
+
+
 class Pokestop(BaseModel):
     pokestop_id = CharField(primary_key=True, max_length=50)
     enabled = BooleanField()

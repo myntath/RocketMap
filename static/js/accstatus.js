@@ -1,6 +1,3 @@
-/* Shared */
-var monthArray = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec']
-
 /* Main stats page */
 var rawDataIsLoading = false
 var statusPagePassword = false
@@ -10,30 +7,30 @@ var groupByWorker = true
 var minUpdateDelay = 1000 // Minimum delay between updates (in ms).
 var lastRawUpdateTime = new Date()
 
-function addWorker(mainWorkerHash, workerHash) {
+function addWorker(mainWorkerHash, accountHash) {
     var row = `
-     <div id="row_${workerHash}" class="status_row">
-       <div id="name_${workerHash}" class="status_cell"/>
-       <div id="password_${workerHash}"  class="status_cell"/>
-       <div id="login_type_${workerHash}"     class="status_cell"/>
-       <div id="total_scans_${workerHash}"  class="status_cell"/>
-       <div id="total_fails_${workerHash}"     class="status_cell"/>
-       <div id="fail_rate_${workerHash}"     class="status_cell"/>
-       <div id="total_empty_${workerHash}" class="status_cell"/>
-       <div id="empty_rate_${workerHash}" class="status_cell"/>
-       <div id="total_captcha_${workerHash}" class="status_cell"/>
-       <div id="captcha_rate_${workerHash}" class="status_cell"/>
-       <div id="total_success_${workerHash}"  class="status_cell"/>
-       <div id="success_rate_${workerHash}"  class="status_cell"/>
-       <div id="lastmod_${workerHash}"  class="status_cell"/>
+     <div id="row_${accountHash}" class="status_row">
+       <div id="name_${accountHash}" class="status_cell"/>
+       <div id="login_type_${accountHash}"     class="status_cell"/>
+       <div id="total_scans_${accountHash}"  class="status_cell"/>
+       <div id="total_fails_${accountHash}"     class="status_cell"/>
+       <div id="fail_rate_${accountHash}"     class="status_cell"/>
+       <div id="total_empty_${accountHash}" class="status_cell"/>
+       <div id="empty_rate_${accountHash}" class="status_cell"/>
+       <div id="total_captcha_${accountHash}" class="status_cell"/>
+       <div id="captcha_rate_${accountHash}" class="status_cell"/>
+       <div id="total_success_${accountHash}"  class="status_cell"/>
+       <div id="success_rate_${accountHash}"  class="status_cell"/>
+       <div id="level_${accountHash}" class= "status_cell"/>
+       <div id="lastmod_${accountHash}"  class="status_cell"/>
      </div>
    `
 
     $(row).appendTo('#table_' + mainWorkerHash)
 }
 
-function processAccount(i, worker) {
-    var hash = hashFnv32a(worker['name'], true)
+function processAccount(i, account) {
+    var hash = hashFnv32a(account['name'], true)
     var mainWorkerHash
     mainWorkerHash = 'global'
     if ($('#table_global').length === 0) {
@@ -43,28 +40,27 @@ function processAccount(i, worker) {
     if ($('#row_' + hash).length === 0) {
         addWorker(mainWorkerHash, hash)
     }
-    
-    var lastModified = new Date(worker['last_active'])
-    lastModified = lastModified.getHours() + ':' +
-        ('0' + lastModified.getMinutes()).slice(-2) + ':' +
-        ('0' + lastModified.getSeconds()).slice(-2) + ' ' +
-        lastModified.getDate() + ' ' +
-        monthArray[lastModified.getMonth()] + ' ' +
-        lastModified.getFullYear()
 
-    $('#name_' + hash).html(worker['name'])
-    $('#password_' + hash).html(worker['password'])
-    $('#login_type_' + hash).html(worker['login_type'])
-    $('#total_scans_' + hash).html(worker['total_scans'])
-    $('#total_fails_' + hash).html(worker['total_fails'])
-    $('#total_empty_' + hash).html(worker['total_empty'])
-    $('#fail_rate_' + hash).html(worker['fail_rate'])
-    $('#empty_rate_' + hash).html(worker['empty_rate'])
-    $('#captcha_rate_' + hash).html(worker['captcha_rate'])
+    var lastModified = new Date(account['last_active'])
+    lastModified = lastModified.getFullYear() + '/' +
+        (lastModified.getMonth() + 1) + '/' + lastModified.getDate() + ' ' +
+        lastModified.getHours() + ':' +
+        ('0' + lastModified.getMinutes()).slice(-2) + ':' +
+        ('0' + lastModified.getSeconds()).slice(-2)
+
+    $('#name_' + hash).html(account['name'])
+    $('#login_type_' + hash).html(account['login_type'])
+    $('#total_scans_' + hash).html(account['total_scans'])
+    $('#total_fails_' + hash).html(account['total_fails'])
+    $('#total_empty_' + hash).html(account['total_empty'])
+    $('#fail_rate_' + hash).html(account['fail_rate'])
+    $('#empty_rate_' + hash).html(account['empty_rate'])
+    $('#captcha_rate_' + hash).html(account['captcha_rate'])
     $('#lastmod_' + hash).html(lastModified)
-    $('#total_success_' + hash).html(worker['total_success'])
-    $('#success_rate_' + hash).html(worker['success_rate'])
-    $('#total_captcha_' + hash).html(worker['total_captcha'])
+    $('#total_success_' + hash).html(account['total_success'])
+    $('#success_rate_' + hash).html(account['success_rate'])
+    $('#level_' + hash).html(account['level'])
+    $('#total_captcha_' + hash).html(account['total_captcha'])
 }
 
 function parseResult(result) {
@@ -81,9 +77,6 @@ function addTable(hash) {
        <div class="status_row header">
          <div class="status_cell">
            Username
-         </div>
-         <div class="status_cell">
-           Password
          </div>
          <div class="status_cell">
            Type
@@ -114,6 +107,9 @@ function addTable(hash) {
          </div>
          <div class="status_cell">
            Success %
+         </div>
+         <div class="status_cell">
+           Level
          </div>
          <div class="status_cell">
            Last Used
@@ -244,16 +240,5 @@ $(document).ready(function () {
                 $('#password').focus()
             }
         })
-    })
-
-    $('#groupbyworker-switch').change(function () {
-        groupByWorker = this.checked
-
-        $('#status_container .status_table').remove()
-        $('#status_container .worker').remove()
-
-        if (statusPagePassword) {
-            updateStatus()
-        }
     })
 })
