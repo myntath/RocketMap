@@ -547,9 +547,10 @@ class Account(BaseModel):
 
     @staticmethod
     def get_account_id(account_id):
-        query = Account.select().where(Account.account_id == account_id).dicts()
+        query = Account.select().where(
+            Account.account_id == account_id).dicts()
         return query
-    
+
     @staticmethod
     def update_accounts(db_update_queue, name, fail, empty, captcha, level):
 
