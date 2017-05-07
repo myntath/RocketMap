@@ -224,15 +224,10 @@ def main():
                 args.accounts.append({'username': account['name'],
                                       'password': account['password'],
                                       'auth_service': account['login_type']})
-<<<<<<< 939cd719a158950e988808397ecef3853dc9afeb
         connections = args.db_max_connections
         if len(args.accounts) > 0:
             connections *= len(args.accounts)
             db.max_connections = connections
-=======
-    db = False
-    db = init_database(app)
->>>>>>> Add store level and display, also load accounts from db
 
     if args.clear_db:
         log.info('Clearing database')
