@@ -456,7 +456,7 @@ class BadScans(BaseModel):
 
         result = result[0]
         scan_number = result['total_scans']
-        if status_name == None:
+        if not status_name:
             status_name = "No Instance Name"
         out = {'name': name,
                'scan_type': scan_type,
