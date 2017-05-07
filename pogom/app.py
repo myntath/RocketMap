@@ -64,8 +64,6 @@ class Pogom(Flask):
         self.route("/submit_token", methods=['POST'])(self.submit_token)
         self.route("/get_stats", methods=['GET'])(self.get_account_stats)
         self.route("/robots.txt", methods=['GET'])(self.render_robots_txt)
-        self.route("/accounts", methods=['GET'])(self.get_full_account_stats)
-        self.route("/accounts", methods=['POST'])(self.post_account_status)
 
     def render_robots_txt(self):
         return render_template('robots.txt')
@@ -97,26 +95,6 @@ class Pogom(Flask):
         r = make_response(jsonify(**stats))
         r.headers.add('Access-Control-Allow-Origin', '*')
         return r
-
-    def get_full_account_stats(self):
-        args = get_args()
-        if args.status_page_password is None:
-            abort(404)
-
-        return render_template('acstatus.html')
-
-    def post_account_status(self):
-        args = get_args()
-        d = {}
-        if args.status_page_password is None:
-            abort(404)
-
-        if request.form.get('password', None) == args.status_page_password:
-            d['login'] = 'ok'
-            d['accounts'] = Account.get_all_stats()
-        else:
-            d['login'] = 'failed'
-        return jsonify(d)
 
     def validate_request(self):
         args = get_args()
@@ -589,6 +567,7 @@ class Pogom(Flask):
             d['main_workers'] = MainWorker.get_all()
             d['workers'] = WorkerStatus.get_all()
             d['hashkeys'] = HashKeys.get_obfuscated_keys()
+            d['accounts'] = Account.get_all_stats()
         else:
             d['login'] = 'failed'
         return jsonify(d)
