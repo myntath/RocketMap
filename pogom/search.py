@@ -972,14 +972,14 @@ def search_worker_thread(args, account_queue, account_sets, account_failures,
                 # Got the response, check for captcha, parse it out, then send
                 # todo's to db/wh queues.
                 try:
+                    level = get_player_level(response_dict)
+                    log.debug(
+                        '{} level {}'.format(account['username'], level))
                     captcha = handle_captcha(args, status, api, account,
                                              account_failures,
                                              account_captchas, whq,
                                              response_dict, step_location)
                     if captcha is not None:
-                        level = get_player_level(response_dict)
-                        log.debug(
-                            '{} level {}'.format(account['username'], level))
                         Account.update_accounts(dbq, account['username'],
                                                 False, False, True, level)
                         BadScans.add_bad_scan(account['username'], 'captcha',

@@ -323,7 +323,7 @@ function tableSort() {
 
 function createAccountTable() {
     var table = `
-     <div class="status_table" id="table_account">
+     <div class="status_table" id="table_accounts">
        <div class="status_row header">
          <div class="status_cell">
            Username
