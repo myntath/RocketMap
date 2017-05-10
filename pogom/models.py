@@ -1211,7 +1211,7 @@ class SpawnPoint(BaseModel):
         query = (SpawnPoint
                  .select(SpawnPoint.latitude.alias('lat'),
                          SpawnPoint.longitude.alias('lng'),
-                         SpawnPoint.spawnpoint_id,
+                         SpawnPoint.id,
                          SpawnPoint.earliest_unseen,
                          SpawnPoint.latest_seen,
                          SpawnPoint.kind,
@@ -1245,8 +1245,15 @@ class SpawnPoint(BaseModel):
         # We use 'time' as appearance time as this was how things worked
         # previously we now also include 'disappear_time' because we
         # can and it is meaningful in a list of spawn data
+        # the other changes also maintain a similar file format
         for sp in filtered:
             sp['time'], sp['disappear_time'] = cls.start_end(sp)
+            del sp['earliest_unseen']
+            del sp['latest_seen']
+            del sp['kind']
+            del sp['links']
+            sp['spawnpoint_id'] = sp['id']
+            del sp['id']
 
         return filtered
 
