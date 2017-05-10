@@ -482,6 +482,7 @@ class Account(BaseModel):
     total_captcha = IntegerField(default=0)
     level = IntegerField(default=0)
     warning = BooleanField(default=False, null=False)
+    banned = BooleanField(default=False, null=False)
     enabled = BooleanField(default=True, null=False)
     last_active = DateTimeField(default=datetime.utcnow())
 
@@ -512,6 +513,17 @@ class Account(BaseModel):
             log.info('Changing account warning flag for {} to {}'.format(name,
                                                                          flag))
             account['warning'] = flag
+            output = {0: account}
+            db_update_queue.put((cls, output))
+        return True
+
+    @classmethod
+    def set_banned(cls, name, flag, db_update_queue):
+        account = cls.select().where(cls.name == name).dicts().get()
+        if account['banned'] != flag:
+            log.info('Changing account ban flag for {} to {}'.format(name,
+                                                                         flag))
+            account['banned'] = flag
             output = {0: account}
             db_update_queue.put((cls, output))
         return True

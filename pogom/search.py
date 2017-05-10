@@ -41,6 +41,7 @@ from pgoapi.utilities import f2i
 from pgoapi import utilities as util
 from pgoapi.hash_server import (HashServer, BadHashRequestException,
                                 HashingOfflineException)
+from pgoapi.exceptions import BannedAccountException
 from .models import (parse_map, GymDetails, parse_gyms, MainWorker,
                      WorkerStatus, HashKeys, Account, BadScans)
 from .utils import now, clear_dict_response
@@ -927,16 +928,25 @@ def search_worker_thread(args, account_queue, account_sets, account_failures,
                 if first_login:
                     first_login = False
 
-                    # Check if account has warning
-                    warning_status = check_account_warning(api, account)
-                    if warning_status:
-                        log.warning('{} has the warning flag from Niantic'
-                                    .format(account['username']))
-                    else:
-                        log.info('{} does not have a warning flag'
-                                 .format(account['username']))
-                    Account.set_warning(account['username'], warning_status,
-                                        dbq)
+                    # Check if account has warning will also find bans
+                    try:
+                        warning_status = check_account_warning(api, account)
+                
+                        if warning_status:
+                            log.warning('{} has the warning flag from Niantic'
+                                        .format(account['username']))
+                        else:
+                            log.info('{} does not have a warning flag'
+                                     .format(account['username']))
+                        Account.set_warning(account['username'],
+                                            warning_status, dbq)
+                        Account.set_banned(account['username'],
+                                        False, dbq)
+                    except BannedAccountException:
+                        log.error('{} is a Banned Account'
+                                  .format(account['username']))
+                        Account.set_ban(account['username'],
+                                        True, dbq)
 
                     # Check tutorial completion.
                     if args.complete_tutorial:
