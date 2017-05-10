@@ -325,58 +325,6 @@ class Pokemon(BaseModel):
 
         return list(itertools.chain(*query))
 
-    @classmethod
-    def get_spawn_time(cls, disappear_time):
-        return (disappear_time + 2700) % 3600
-
-    @classmethod
-    def get_spawnpoints_in_hex(cls, center, steps):
-
-        log.info('Finding spawnpoints {} steps away.'.format(steps))
-
-        n, e, s, w = hex_bounds(center, steps)
-
-        query = (Pokemon
-                 .select(Pokemon.latitude.alias('lat'),
-                         Pokemon.longitude.alias('lng'),
-                         (date_secs(Pokemon.disappear_time)).alias('time'),
-                         Pokemon.spawnpoint_id
-                         ))
-        query = (query.where((Pokemon.latitude <= n) &
-                             (Pokemon.latitude >= s) &
-                             (Pokemon.longitude >= w) &
-                             (Pokemon.longitude <= e)
-                             ))
-        # Sqlite doesn't support distinct on columns.
-        if args.db_type == 'mysql':
-            query = query.distinct(Pokemon.spawnpoint_id)
-        else:
-            query = query.group_by(Pokemon.spawnpoint_id)
-
-        s = list(query.dicts())
-
-        # The distance between scan circles of radius 70 in a hex is 121.2436
-        # steps - 1 to account for the center circle then add 70 for the edge.
-        step_distance = ((steps - 1) * 121.2436) + 70
-        # Compare spawnpoint list to a circle with radius steps * 120.
-        # Uses the direct geopy distance between the center and the spawnpoint.
-        filtered = []
-
-        for idx, sp in enumerate(s):
-            if geopy.distance.distance(
-                    center, (sp['lat'], sp['lng'])).meters <= step_distance:
-                filtered.append(s[idx])
-
-        # At this point, 'time' is DISAPPEARANCE time, we're going to morph it
-        # to APPEARANCE time accounting for hour wraparound.
-        for location in filtered:
-            # todo: this DOES NOT ACCOUNT for Pokemon that appear sooner and
-            # live longer, but you'll _always_ have at least 15 minutes, so it
-            # works well enough.
-            location['time'] = cls.get_spawn_time(location['time'])
-
-        return filtered
-
 
 class Pokestop(BaseModel):
     pokestop_id = Utf8mb4CharField(primary_key=True, max_length=50)
@@ -1252,6 +1200,55 @@ class SpawnPoint(BaseModel):
             del sp['earliest_unseen']
 
         return list(spawnpoints.values())
+
+    @classmethod
+    def get_spawnpoints_in_hex(cls, center, steps):
+
+        log.info('Finding spawnpoints {} steps away.'.format(steps))
+
+        n, e, s, w = hex_bounds(center, steps)
+
+        query = (SpawnPoint
+                 .select(SpawnPoint.latitude.alias('lat'),
+                         SpawnPoint.longitude.alias('lng'),
+                         SpawnPoint.spawnpoint_id,
+                         SpawnPoint.earliest_unseen,
+                         SpawnPoint.latest_seen,
+                         SpawnPoint.kind,
+                         SpawnPoint.links,
+                         ))
+        query = (query.where((SpawnPoint.latitude <= n) &
+                             (SpawnPoint.latitude >= s) &
+                             (SpawnPoint.longitude >= w) &
+                             (SpawnPoint.longitude <= e)
+                             ))
+        # Sqlite doesn't support distinct on columns.
+        if args.db_type == 'mysql':
+            query = query.distinct(SpawnPoint.id)
+        else:
+            query = query.group_by(SpawnPoint.id)
+
+        s = list(query.dicts())
+
+        # The distance between scan circles of radius 70 in a hex is 121.2436
+        # steps - 1 to account for the center circle then add 70 for the edge.
+        step_distance = ((steps - 1) * 121.2436) + 70
+        # Compare spawnpoint list to a circle with radius steps * 120.
+        # Uses the direct geopy distance between the center and the spawnpoint.
+        filtered = []
+
+        for idx, sp in enumerate(s):
+            if geopy.distance.distance(
+                    center, (sp['lat'], sp['lng'])).meters <= step_distance:
+                filtered.append(s[idx])
+
+        # We use 'time' as appearance time as this was how things worked
+        # previously we now also include 'disappear_time' because we
+        # can and it is meaningful in a list of spawn data
+        for sp in filtered:
+            sp['time'], sp['disappear_time'] = cls.start_end(sp)
+
+        return filtered
 
     # Confirm if tth has been found.
     @staticmethod
