@@ -267,6 +267,15 @@ def tutorial_pokestop_spin(api, player_level, forts, step_location, account):
     return False
 
 
+# Check if the account has a warning from Niantic about botting
+def check_account_warning(api, account):
+    log.info('Checking warning state for %s.', account['username'])
+    response = api.get_player()
+    if 'warn' in response['responses']['GET_PLAYER']:
+        return True
+    return False
+
+
 def get_player_level(map_dict):
     inventory_items = map_dict['responses'].get(
         'GET_INVENTORY', {}).get(

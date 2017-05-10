@@ -91,6 +91,7 @@ function addAccountRow(accountHash) {
        <div id="acc_total_success_${accountHash}" class="status_cell"/>
        <div id="acc_success_rate_${accountHash}" class="status_cell"/>
        <div id="acc_level_${accountHash}" class= "status_cell"/>
+       <div id="acc_warning_${accountHash}" class="status_cell"/>
        <div id="acc_lastmod_${accountHash}" class="status_cell"/>
      </div>
    `
@@ -200,6 +201,7 @@ function processAccounts(i, account) {
     $('#acc_success_rate_' + hash).html(account['success_rate'])
     $('#acc_level_' + hash).html(account['level'])
     $('#acc_total_captcha_' + hash).html(account['total_captcha'])
+    $('#acc_warning_' + hash).html(account['warning'])
 }
 function parseResult(result) {
     if (groupByWorker && showWorkersTable) {
@@ -360,6 +362,9 @@ function createAccountTable() {
          </div>
          <div class="status_cell">
            Level
+         </div>
+         <div class="status_cell">
+           Warning
          </div>
          <div class="status_cell">
            Last Used

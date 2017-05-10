@@ -46,7 +46,8 @@ from .models import (parse_map, GymDetails, parse_gyms, MainWorker,
 from .utils import now, clear_dict_response
 from .transform import get_new_coords, jitter_location
 from .account import (setup_api, check_login, get_tutorial_state,
-                      complete_tutorial, AccountSet, get_player_level)
+                      complete_tutorial, AccountSet, get_player_level,
+                      check_account_warning)
 from .captcha import captcha_overseer_thread, handle_captcha
 from .proxy import get_new_proxy
 
@@ -925,6 +926,17 @@ def search_worker_thread(args, account_queue, account_sets, account_failures,
                 # check_login().
                 if first_login:
                     first_login = False
+
+                    # Check if account has warning
+                    warning_status = check_account_warning(api, account)
+                    if warning_status:
+                        log.warning('{} has the warning flag from Niantic'
+                                    .format(account['username']))
+                    else:
+                        log.info('{} does not have a warning flag'
+                                 .format(account['username']))
+                    Account.set_warning(account['username'], warning_status,
+                                        dbq)
 
                     # Check tutorial completion.
                     if args.complete_tutorial:

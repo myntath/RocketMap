@@ -481,6 +481,7 @@ class Account(BaseModel):
     total_success = IntegerField(default=0)
     total_captcha = IntegerField(default=0)
     level = IntegerField(default=0)
+    warning = BooleanField(default=False, null=False)
     enabled = BooleanField(default=True, null=False)
     last_active = DateTimeField(default=datetime.utcnow())
 
@@ -503,6 +504,17 @@ class Account(BaseModel):
             account['enabled'] = False
             db_update_queue.put((cls, account))
             return True
+
+    @classmethod
+    def set_warning(cls, name, flag, db_update_queue):
+        account = cls.select().where(cls.name == name).dicts().get()
+        if account['warning'] != flag:
+            log.info('Changing account warning flag for {} to {}'.format(name,
+                                                                         flag))
+            account['warning'] = flag
+            output = {0: account}
+            db_update_queue.put((cls, output))
+        return True
 
     @classmethod
     def get_all_stats(cls):
