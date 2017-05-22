@@ -50,7 +50,7 @@ from .utils import now, clear_dict_response
 from .transform import get_new_coords, jitter_location
 from .account import (setup_api, check_login, get_tutorial_state,
                       complete_tutorial, AccountSet, get_player_level,
-                      check_account_warning)
+                      check_account_warning, get_account_stats)
 from .captcha import captcha_overseer_thread, handle_captcha
 from .proxy import get_new_proxy
 
@@ -991,13 +991,14 @@ def search_worker_thread(args, account_queue, account_sets, account_failures,
                 status['latitude'] = step_location[0]
                 status['longitude'] = step_location[1]
                 dbq.put((WorkerStatus, {0: WorkerStatus.db_format(status)}))
+                account_stats = {}
 
                 # Nothing back. Mark it up, sleep, carry on.
                 if not response_dict:
                     status['fail'] += 1
                     consecutive_fails += 1
                     Account.update_accounts(dbq, account['username'],
-                                            True, False, False, 0)
+                                            True, False, False, 0, account_stats)
                     BadScans.add_bad_scan(account['username'], 'fail',
                                           step_location[0], step_location[1],
                                           args.status_name, dbq)
@@ -1018,7 +1019,7 @@ def search_worker_thread(args, account_queue, account_sets, account_failures,
                                              response_dict, step_location)
                     if captcha is not None:
                         Account.update_accounts(dbq, account['username'],
-                                                False, False, True, level)
+                                                False, False, True, level, account_stats)
                         BadScans.add_bad_scan(account['username'], 'captcha',
                                               step_location[0],
                                               step_location[1],
@@ -1035,7 +1036,6 @@ def search_worker_thread(args, account_queue, account_sets, account_failures,
                         time.sleep(3)
                         break
                     account_stats = get_account_stats(response_dict)
-                    log.error(account_stats)
                     parsed = parse_map(args, response_dict, step_location,
                                        dbq, whq, key_scheduler, api, status,
                                        scan_date, account, account_sets)
@@ -1045,12 +1045,12 @@ def search_worker_thread(args, account_queue, account_sets, account_failures,
                         status['success'] += 1
                         consecutive_noitems = 0
                         Account.update_accounts(dbq, account['username'],
-                                                False, False, False, level)
+                                                False, False, False, level, account_stats)
                     else:
                         status['noitems'] += 1
                         consecutive_noitems += 1
                         Account.update_accounts(dbq, account['username'],
-                                                False, True, False, level)
+                                                False, True, False, level, account_stats)
                         BadScans.add_bad_scan(account['username'], 'empty',
                                               step_location[0],
                                               step_location[1],
@@ -1073,7 +1073,7 @@ def search_worker_thread(args, account_queue, account_sets, account_failures,
                                                            step_location[1],
                                                            account['username'])
                     Account.update_accounts(dbq, account['username'],
-                                            True, False, False, level)
+                                            True, False, False, level, account_stats)
 
                     BadScans.add_bad_scan(account['username'], 'fail',
                                           step_location[0], step_location[1],

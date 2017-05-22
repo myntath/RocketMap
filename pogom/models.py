@@ -485,6 +485,7 @@ class Account(BaseModel):
     password = CharField(null=False)
     login_type = CharField(null=False)
     total_scans = IntegerField(default=0)
+    total_spawns = IntegerField(default=0)
     total_fails = IntegerField(default=0)
     total_empty = IntegerField(default=0)
     total_success = IntegerField(default=0)
@@ -497,7 +498,8 @@ class Account(BaseModel):
     distance = IntegerField(default=0)
     stops = IntegerField(default=0)
     caught = IntegerField(default=0)
-    last_rare = DateTimeField(default=datetime.utcnow())
+    encounters = IntegerField(default=0)
+    last_rare = IntegerField(default=0)
     missed_spawns = IntegerField(default=0)
     last_active = DateTimeField(default=datetime.utcnow())
 
@@ -543,6 +545,21 @@ class Account(BaseModel):
             db_update_queue.put((cls, output))
         return True
 
+    @classmethod
+    def set_rare_seen(cls, name):
+       q = cls.update(last_rare=cls.total_spawns).where(cls.name == name)
+       q.execute() 
+
+    @classmethod                                                                                                                                   
+    def increase_spawn_missed(cls, name):
+       q = cls.update(missed_spawns=cls.missed_spawns+1).where(cls.name == name)
+       q.execute()
+
+    @classmethod
+    def increase_total_spawns(cls, name, spawns):
+       q = cls.update(total_spawns=cls.total_spawns+spawns).where(cls.name == name)
+       q.execute()
+    
     @classmethod
     def get_all_stats(cls):
         raw = [m for m in cls.select().dicts()]
@@ -591,7 +608,7 @@ class Account(BaseModel):
         return query
 
     @staticmethod
-    def update_accounts(db_update_queue, name, fail, empty, captcha, level):
+    def update_accounts(db_update_queue, name, fail, empty, captcha, level, account_stats):
 
         # check account exists
         query = (Account.select().where(Account.name == name).dicts())
@@ -614,6 +631,12 @@ class Account(BaseModel):
         # set level
         if level != 0:
             result[0]['level'] = level
+
+        # add stats
+        if account_stats.get('stops', 0) != 0: result[0]['stops'] = account_stats.get('stops')
+        if account_stats.get('caught', 0) != 0: result[0]['caught'] = account_stats.get('caught')
+        if account_stats.get('walk', 0) != 0: result[0]['distance'] = account_stats.get('walk')
+        if account_stats.get('enc', 0) != 0: result[0]['encounters'] = account_stats.get('enc')
 
         # add 1 to scans
         result[0]['total_scans'] += 1
@@ -2089,6 +2112,7 @@ def parse_map(args, map_dict, step_location, db_update_queue, wh_update_queue,
         encountered_pokemon = [
             (p['encounter_id'], p['spawnpoint_id']) for p in query]
 
+        Account.increase_total_spawns(account['username'], len(wild_pokemon))
         for p in wild_pokemon:
 
             sp = SpawnPoint.get_by_id(p['spawn_point_id'], p[
@@ -2103,7 +2127,13 @@ def parse_map(args, map_dict, step_location, db_update_queue, wh_update_queue,
                 'scan_time': now_date,
                 'tth_secs': None
             }
-
+            
+            # Update the Account info if this is a rare
+            rare_ids = [111, 218]
+            log.error(p['pokemon_data']['pokemon_id'])
+            if p['pokemon_data']['pokemon_id'] in rare_ids:
+                Account.set_rare_seen(account['username'])
+        
             # Keep a list of sp_ids to return.
             sp_id_list.append(p['spawn_point_id'])
 
@@ -2516,6 +2546,7 @@ def parse_map(args, map_dict, step_location, db_update_queue, wh_update_queue,
             endpoints = SpawnPoint.start_end(sp, args.spawn_delay)
             if clock_between(endpoints[0], now_secs, endpoints[1]):
                 sp['missed_count'] += 1
+                Account.increase_spawn_missed(account['username'])
                 spawn_points[sp['id']] = sp
                 log.warning('%s kind spawnpoint %s has no Pokemon %d times'
                             ' in a row.',
