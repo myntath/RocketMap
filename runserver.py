@@ -23,7 +23,7 @@ from pogom.altitude import get_gmaps_altitude
 
 from pogom.search import search_overseer_thread
 from pogom.models import (init_database, create_tables, drop_tables,
-                          Pokemon, db_updater, clean_db_loop, Account
+                          Pokemon, db_updater, clean_db_loop, Account,
                           verify_table_encoding, verify_database_schema)
 from pogom.webhook import wh_updater
 
