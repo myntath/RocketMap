@@ -484,6 +484,12 @@ class Account(BaseModel):
     warning = BooleanField(default=False, null=False)
     banned = BooleanField(default=False, null=False)
     enabled = BooleanField(default=True, null=False)
+    instance = CharField(null=True)
+    distance = IntegerField(default=0)
+    stops = IntegerField(default=0)
+    caught = IntegerField(default=0)
+    last_rare = DateTimeField(default=datetime.utcnow())
+    missed_spawns = IntegerField(default=0)
     last_active = DateTimeField(default=datetime.utcnow())
 
     @classmethod

@@ -1019,7 +1019,8 @@ def search_worker_thread(args, account_queue, account_sets, account_failures,
                         account_queue.task_done()
                         time.sleep(3)
                         break
-
+                    account_stats = get_account_stats(response_dict)
+                    log.error(account_stats)
                     parsed = parse_map(args, response_dict, step_location,
                                        dbq, whq, key_scheduler, api, status,
                                        scan_date, account, account_sets)

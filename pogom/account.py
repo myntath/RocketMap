@@ -276,7 +276,7 @@ def check_account_warning(api, account):
     return False
 
 
-def get_player_level(map_dict):
+def get_player_stats(map_dict):
     inventory_items = map_dict['responses'].get(
         'GET_INVENTORY', {}).get(
         'inventory_delta', {}).get(
@@ -286,8 +286,29 @@ def get_player_level(map_dict):
                     if 'player_stats' in item.get(
                     'inventory_item_data', {})]
     if len(player_stats) > 0:
+        return player_stats
+
+    return 0
+
+
+def get_player_level(map_dict):
+    player_stats = get_player_stats(map_dict)
+    if player_stats != 0:
         player_level = player_stats[0].get('level', 1)
         return player_level
+
+    return 0
+
+
+def get_account_stats(map_dict):
+    player_stats = get_player_stats(map_dict)
+    account_stats = {}
+    if player_stats != 0:
+        account_stats['stops']  = player_stats[0].get('poke_stop_visits', 0)
+        account_stats['walk']   = player_stats[0].get('km_walked', 0)
+        account_stats['caught'] = player_stats[0].get('pokemons_captured', 0)
+        account_stats['enc']    = player_stats[0].get('pokemons_encountered', 0)
+        return account_stats
 
     return 0
 
