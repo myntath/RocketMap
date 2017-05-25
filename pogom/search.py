@@ -946,7 +946,7 @@ def search_worker_thread(args, account_queue, account_sets, account_failures,
                     # Check if account has warning will also find bans
                     try:
                         warning_status = check_account_warning(api, account)
-                
+
                         if warning_status:
                             log.warning('{} has the warning flag from Niantic'
                                         .format(account['username']))
@@ -956,7 +956,7 @@ def search_worker_thread(args, account_queue, account_sets, account_failures,
                         Account.set_warning(account['username'],
                                             warning_status, dbq)
                         Account.set_banned(account['username'],
-                                        False, dbq)
+                                           False, dbq)
                     except BannedAccountException:
                         log.error('{} is a Banned Account'
                                   .format(account['username']))
@@ -998,7 +998,8 @@ def search_worker_thread(args, account_queue, account_sets, account_failures,
                     status['fail'] += 1
                     consecutive_fails += 1
                     Account.update_accounts(dbq, account['username'],
-                                            True, False, False, 0, account_stats)
+                                            True, False, False, 0,
+                                            account_stats)
                     BadScans.add_bad_scan(account['username'], 'fail',
                                           step_location[0], step_location[1],
                                           args.status_name, dbq)
@@ -1019,7 +1020,8 @@ def search_worker_thread(args, account_queue, account_sets, account_failures,
                                              response_dict, step_location)
                     if captcha is not None:
                         Account.update_accounts(dbq, account['username'],
-                                                False, False, True, level, account_stats)
+                                                False, False, True, level,
+                                                account_stats)
                         BadScans.add_bad_scan(account['username'], 'captcha',
                                               step_location[0],
                                               step_location[1],
@@ -1045,12 +1047,14 @@ def search_worker_thread(args, account_queue, account_sets, account_failures,
                         status['success'] += 1
                         consecutive_noitems = 0
                         Account.update_accounts(dbq, account['username'],
-                                                False, False, False, level, account_stats)
+                                                False, False, False, level,
+                                                account_stats)
                     else:
                         status['noitems'] += 1
                         consecutive_noitems += 1
                         Account.update_accounts(dbq, account['username'],
-                                                False, True, False, level, account_stats)
+                                                False, True, False, level,
+                                                account_stats)
                         BadScans.add_bad_scan(account['username'], 'empty',
                                               step_location[0],
                                               step_location[1],
@@ -1073,7 +1077,8 @@ def search_worker_thread(args, account_queue, account_sets, account_failures,
                                                            step_location[1],
                                                            account['username'])
                     Account.update_accounts(dbq, account['username'],
-                                            True, False, False, level, account_stats)
+                                            True, False, False, level,
+                                            account_stats)
 
                     BadScans.add_bad_scan(account['username'], 'fail',
                                           step_location[0], step_location[1],

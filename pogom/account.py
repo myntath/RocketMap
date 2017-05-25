@@ -271,6 +271,7 @@ def tutorial_pokestop_spin(api, player_level, forts, step_location, account):
 def check_account_warning(api, account):
     log.info('Checking warning state for %s.', account['username'])
     response = api.get_player()
+    time.sleep(3)
     if 'warn' in response['responses']['GET_PLAYER']:
         return True
     return False
@@ -304,10 +305,10 @@ def get_account_stats(map_dict):
     player_stats = get_player_stats(map_dict)
     account_stats = {}
     if player_stats != 0:
-        account_stats['stops']  = player_stats[0].get('poke_stop_visits', 0)
-        account_stats['walk']   = player_stats[0].get('km_walked', 0)
+        account_stats['stops'] = player_stats[0].get('poke_stop_visits', 0)
+        account_stats['walk'] = player_stats[0].get('km_walked', 0)
         account_stats['caught'] = player_stats[0].get('pokemons_captured', 0)
-        account_stats['enc']    = player_stats[0].get('pokemons_encountered', 0)
+        account_stats['enc'] = player_stats[0].get('pokemons_encountered', 0)
         return account_stats
 
     return 0

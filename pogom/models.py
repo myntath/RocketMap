@@ -44,6 +44,8 @@ cache = TTLCache(maxsize=100, ttl=60 * 5)
 
 db_schema_version = 19
 
+rare_ids = [111, 2, 3, 5, 6, 8, 9, 10, 13, 21, 48, 133, 163, 216]
+
 
 class MyRetryDB(RetryOperationalError, PooledMySQLDatabase):
     pass
@@ -539,7 +541,7 @@ class Account(BaseModel):
         account = cls.select().where(cls.name == name).dicts().get()
         if account['banned'] != flag:
             log.info('Changing account ban flag for {} to {}'.format(name,
-                                                                         flag))
+                     flag))
             account['banned'] = flag
             output = {0: account}
             db_update_queue.put((cls, output))
@@ -547,19 +549,23 @@ class Account(BaseModel):
 
     @classmethod
     def set_rare_seen(cls, name):
-       q = cls.update(last_rare=cls.total_spawns).where(cls.name == name)
-       q.execute() 
+        q = cls.update(last_rare=cls.total_spawns).where(cls.name == name)
+        q.execute()
 
-    @classmethod                                                                                                                                   
+    @classmethod
     def increase_spawn_missed(cls, name):
-       q = cls.update(missed_spawns=cls.missed_spawns+1).where(cls.name == name)
-       q.execute()
+        q = (cls
+             .update(missed_spawns=cls.missed_spawns+1)
+             .where(cls.name == name))
+        q.execute()
 
     @classmethod
     def increase_total_spawns(cls, name, spawns):
-       q = cls.update(total_spawns=cls.total_spawns+spawns).where(cls.name == name)
-       q.execute()
-    
+        q = (cls
+             .update(total_spawns=cls.total_spawns+spawns)
+             .where(cls.name == name))
+        q.execute()
+
     @classmethod
     def get_all_stats(cls):
         raw = [m for m in cls.select().dicts()]
@@ -608,7 +614,8 @@ class Account(BaseModel):
         return query
 
     @staticmethod
-    def update_accounts(db_update_queue, name, fail, empty, captcha, level, account_stats):
+    def update_accounts(db_update_queue, name, fail, empty, captcha, level,
+                        account_stats):
 
         # check account exists
         query = (Account.select().where(Account.name == name).dicts())
@@ -633,10 +640,14 @@ class Account(BaseModel):
             result[0]['level'] = level
 
         # add stats
-        if account_stats.get('stops', 0) != 0: result[0]['stops'] = account_stats.get('stops')
-        if account_stats.get('caught', 0) != 0: result[0]['caught'] = account_stats.get('caught')
-        if account_stats.get('walk', 0) != 0: result[0]['distance'] = account_stats.get('walk')
-        if account_stats.get('enc', 0) != 0: result[0]['encounters'] = account_stats.get('enc')
+        if account_stats.get('stops', 0) != 0:
+            result[0]['stops'] = account_stats.get('stops')
+        if account_stats.get('caught', 0) != 0:
+            result[0]['caught'] = account_stats.get('caught')
+        if account_stats.get('walk', 0) != 0:
+            result[0]['distance'] = account_stats.get('walk')
+        if account_stats.get('enc', 0) != 0:
+            result[0]['encounters'] = account_stats.get('enc')
 
         # add 1 to scans
         result[0]['total_scans'] += 1
@@ -2127,13 +2138,11 @@ def parse_map(args, map_dict, step_location, db_update_queue, wh_update_queue,
                 'scan_time': now_date,
                 'tth_secs': None
             }
-            
+
             # Update the Account info if this is a rare
-            rare_ids = [111, 218]
-            log.error(p['pokemon_data']['pokemon_id'])
             if p['pokemon_data']['pokemon_id'] in rare_ids:
                 Account.set_rare_seen(account['username'])
-        
+
             # Keep a list of sp_ids to return.
             sp_id_list.append(p['spawn_point_id'])
 
