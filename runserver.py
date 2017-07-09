@@ -23,9 +23,8 @@ from pogom.altitude import get_gmaps_altitude
 
 from pogom.search import search_overseer_thread
 from pogom.models import (init_database, create_tables, drop_tables,
-                          Pokemon, PlayerLocale, SpawnPoint, db_updater,
-                          clean_db_loop, verify_table_encoding,
-                          verify_database_schema)
+                          PlayerLocale, SpawnPoint, db_updater, clean_db_loop,
+                          verify_table_encoding, verify_database_schema)
 from pogom.webhook import wh_updater
 
 from pogom.proxy import check_proxies, proxies_refresher
